@@ -895,14 +895,11 @@ function highlight(raw) {
 }
 
 function colourCode(s) {
-  // PHP open tag
-  s = s.replace(/(&lt;\?php)/g, '<span class="tok-tag">$1</span>');
-
-  // Keywords
+  // Keywords — run first while string has no HTML yet
   const kw = /\b(class|interface|abstract|final|function|public|private|protected|static|new|return|if|else|elseif|foreach|for|throw|extends|implements|namespace|use|readonly|self|parent|null|true|false|void)\b/g;
   s = s.replace(kw, '<span class="tok-kw">$1</span>');
 
-  // Built-in types (when used as type hints)
+  // Built-in types
   const types = /\b(array|string|int|bool|float|mixed|object|iterable|never|callable)\b/g;
   s = s.replace(types, '<span class="tok-type">$1</span>');
 
@@ -913,11 +910,14 @@ function colourCode(s) {
   s = s.replace(/((?:->|::))([a-z_]\w*)(\s*\()/g,
     '$1<span class="tok-fn">$2</span>$3');
 
-  // PascalCase class names (not preceded by tok span tags)
+  // PascalCase class names
   s = s.replace(/\b([A-Z][a-zA-Z0-9]+)\b/g, '<span class="tok-class">$1</span>');
 
   // Numbers
   s = s.replace(/\b(\d+(?:\.\d+)?)\b/g, '<span class="tok-num">$1</span>');
+
+  // PHP open tag — LAST so its class=" attribute isn't caught by keyword regex above
+  s = s.replace(/(&lt;\?php)/g, '<span class="tok-tag">$1</span>');
 
   return s;
 }
