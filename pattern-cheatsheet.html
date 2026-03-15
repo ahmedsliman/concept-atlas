@@ -210,12 +210,23 @@ pre {
   font-size: 12.5px;
   line-height: 1.6;
   overflow-x: auto;
-  color: #a8d8a8;
+  color: #abb2bf;
   tab-size: 4;
   white-space: pre;
 }
 .before-panel pre { border-color: #5a2020; }
 .after-panel  pre { border-color: #1a5a2a; }
+
+/* ── Syntax highlighting ── */
+.tok-kw      { color: #c792ea; }          /* keywords: class, public, return… */
+.tok-type    { color: #82d4f0; }          /* built-in types: string, int, bool */
+.tok-class   { color: #ffd580; }          /* PascalCase class names */
+.tok-var     { color: #f07178; }          /* $variables */
+.tok-str     { color: #c3e88d; }          /* 'strings' */
+.tok-num     { color: #f78c6c; }          /* numbers */
+.tok-comment { color: #4a6070; font-style: italic; } /* // comments */
+.tok-tag     { color: #89ddff; }          /* <?php */
+.tok-fn      { color: #82aaff; }          /* method calls */
 
 /* ── Payments note ── */
 .payments-note {
@@ -856,6 +867,60 @@ function esc(s) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+// ── Syntax highlighter ──────────────────────────────────────────
+// Tokenizes strings/comments first (so inner content is not re-processed),
+// then applies keyword/type/variable/class highlighting to the rest.
+function highlight(raw) {
+  const e = esc(raw);
+
+  // Regex that matches: line comments, block comments, single-quoted strings, double-quoted strings
+  const tokenRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|(&#039;(?:[^&#]|&#(?!039;))*&#039;)|(&quot;(?:[^&]|&(?!quot;))*&quot;)|('(?:[^'\\]|\\.)*')|("(?:[^"\\]|\\.)*")/g;
+
+  let result = '';
+  let last = 0;
+  let m;
+
+  while ((m = tokenRe.exec(e)) !== null) {
+    result += colourCode(e.slice(last, m.index));
+    if (m[1] || m[2]) {
+      result += `<span class="tok-comment">${m[0]}</span>`;
+    } else {
+      result += `<span class="tok-str">${m[0]}</span>`;
+    }
+    last = tokenRe.lastIndex;
+  }
+  result += colourCode(e.slice(last));
+  return result;
+}
+
+function colourCode(s) {
+  // PHP open tag
+  s = s.replace(/(&lt;\?php)/g, '<span class="tok-tag">$1</span>');
+
+  // Keywords
+  const kw = /\b(class|interface|abstract|final|function|public|private|protected|static|new|return|if|else|elseif|foreach|for|throw|extends|implements|namespace|use|readonly|self|parent|null|true|false|void)\b/g;
+  s = s.replace(kw, '<span class="tok-kw">$1</span>');
+
+  // Built-in types (when used as type hints)
+  const types = /\b(array|string|int|bool|float|mixed|object|iterable|never|callable)\b/g;
+  s = s.replace(types, '<span class="tok-type">$1</span>');
+
+  // Variables  $foo
+  s = s.replace(/(\$[a-zA-Z_]\w*)/g, '<span class="tok-var">$1</span>');
+
+  // Method calls  ->foo(  or  ::foo(
+  s = s.replace(/((?:->|::))([a-z_]\w*)(\s*\()/g,
+    '$1<span class="tok-fn">$2</span>$3');
+
+  // PascalCase class names (not preceded by tok span tags)
+  s = s.replace(/\b([A-Z][a-zA-Z0-9]+)\b/g, '<span class="tok-class">$1</span>');
+
+  // Numbers
+  s = s.replace(/\b(\d+(?:\.\d+)?)\b/g, '<span class="tok-num">$1</span>');
+
+  return s;
+}
+
 function filter(btn, f) {
   activeFilter = f;
   document.querySelectorAll('.filter-btn').forEach(b => {
@@ -974,10 +1039,10 @@ function build() {
               <button class="tab-btn" id="tab-after-${id}" onclick="switchTab('${id}','after')">After</button>
             </div>
             <div class="code-panel before-panel active" id="panel-before-${id}">
-              <pre>${esc(p.before)}</pre>
+              <pre>${highlight(p.before)}</pre>
             </div>
             <div class="code-panel after-panel" id="panel-after-${id}">
-              <pre>${esc(p.after)}</pre>
+              <pre>${highlight(p.after)}</pre>
             </div>
           </div>
           <div class="payments-note">💳 ${p.note}</div>
