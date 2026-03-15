@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concept Atlas</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#0f1117;color:#e2e8f0;min-height:100vh}
+
+header{padding:48px 40px 32px;max-width:900px;margin:0 auto}
+header h1{font-size:28px;font-weight:700;color:#fff;letter-spacing:-.5px}
+header h1 span{color:#5a8fbf}
+header p{margin-top:8px;font-size:14px;color:#718096;max-width:500px;line-height:1.6}
+
+main{max-width:900px;margin:0 auto;padding:0 40px 60px}
+
+.section{margin-bottom:40px}
+.section-title{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#4a5568;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #1e2533}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+
+.card{display:flex;flex-direction:column;border-radius:10px;border:1px solid #1e2533;background:#141824;padding:18px;text-decoration:none;color:inherit;transition:border-color .15s,background .15s;position:relative;overflow:hidden}
+.card:hover{border-color:#2a4a7f;background:#161d2e}
+.card.done{cursor:pointer}
+.card.soon{cursor:default;opacity:.55}
+
+.card-icon{font-size:22px;margin-bottom:10px;line-height:1}
+.card-title{font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:5px}
+.card-desc{font-size:12px;color:#718096;line-height:1.5;flex:1}
+
+.badge{display:inline-block;margin-top:12px;font-size:10px;font-weight:600;padding:2px 8px;border-radius:9px;letter-spacing:.3px;align-self:flex-start}
+.badge-live{background:#1a3a2a;color:#68d391;border:1px solid #2a5a3a}
+.badge-soon{background:#1e2533;color:#4a5568;border:1px solid #2a3040}
+
+.card-tag{position:absolute;top:12px;right:12px;font-size:9px;color:#4a5568;font-weight:500;letter-spacing:.5px;text-transform:uppercase}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Concept <span>Atlas</span></h1>
+  <p>Interactive visual artifacts for engineering concepts — DDD, design patterns, refactoring, cybersecurity, and more.</p>
+</header>
+
+<main>
+
+  <!-- DDD -->
+  <div class="section">
+    <div class="section-title">Domain-Driven Design</div>
+    <div class="grid">
+
+      <a class="card done" href="ddd.html">
+        <div class="card-tag">DDD</div>
+        <div class="card-icon">🗺️</div>
+        <div class="card-title">Aggregates &amp; Bounded Contexts</div>
+        <div class="card-desc">Payments domain split into Billing, Identity, and Notifications. Click nodes to explore aggregates, value objects, domain events, and ACLs with PHP examples.</div>
+        <span class="badge badge-live">Live</span>
+      </a>
+
+      <div class="card soon">
+        <div class="card-tag">DDD</div>
+        <div class="card-icon">🧩</div>
+        <div class="card-title">Bounded Context Designer</div>
+        <div class="card-desc">Drag-and-drop tool to sketch bounded contexts and define relationships — ACL, Shared Kernel, Open Host Service.</div>
+        <span class="badge badge-soon">Coming soon</span>
+      </div>
+
+      <div class="card soon">
+        <div class="card-tag">DDD</div>
+        <div class="card-icon">📖</div>
+        <div class="card-title">Ubiquitous Language Builder</div>
+        <div class="card-desc">Living glossary where you define terms per bounded context and see conflicts between contexts highlighted.</div>
+        <span class="badge badge-soon">Coming soon</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Design Patterns -->
+  <div class="section">
+    <div class="section-title">Design Patterns</div>
+    <div class="grid">
+
+      <div class="card soon">
+        <div class="card-tag">Patterns</div>
+        <div class="card-icon">🔧</div>
+        <div class="card-title">Pattern Refactoring Simulator</div>
+        <div class="card-desc">Shows messy code, you pick a pattern, see the refactored version side-by-side with explanation.</div>
+        <span class="badge badge-soon">Coming soon</span>
+      </div>
+
+      <div class="card soon">
+        <div class="card-tag">Patterns</div>
+        <div class="card-icon">🌳</div>
+        <div class="card-title">Pattern Decision Tree</div>
+        <div class="card-desc">Interactive flowchart — describe your problem, walk through branching questions to land on the right pattern.</div>
+        <span class="badge badge-soon">Coming soon</span>
+      </div>
+
+      <div class="card soon">
+        <div class="card-tag">Patterns</div>
+        <div class="card-icon">📋</div>
+        <div class="card-title">Pattern Cheat Sheet</div>
+        <div class="card-desc">Filterable card grid by category (Creational, Structural, Behavioral) with collapsible before/after examples.</div>
+        <span class="badge badge-soon">Coming soon</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Refactoring -->
+  <div class="section">
+    <div class="section-title">Refactoring Legacy Code</div>
+    <div class="grid">
+
+      <div class="card soon">
+        <div class="card-tag">Refactoring</div>
+        <div class="card-icon">🌿</div>
+        <div class="card-title">Mikado Graph Builder</div>
+        <div class="card-desc">Visually map refactoring prerequisites as a tree. Check off nodes as you complete them and see what unlocks next.</div>
+        <span class="badge badge-soon">Coming soon</span>
+      </div>
+
+      <div class="card soon">
+        <div class="card-tag">Refactoring</div>
+        <div class="card-icon">🔍</div>
+        <div class="card-title">Code Smell → Pattern Matcher</div>
+        <div class="card-desc">Pick a code smell, get the recommended refactoring pattern with a before/after diff side by side.</div>
+        <span class="badge badge-soon">Coming soon</span>
+      </div>
+
+      <div class="card soon">
+        <div class="card-tag">Refactoring</div>
+        <div class="card-icon">📊</div>
+        <div class="card-title">Technical Debt Tracker</div>
+        <div class="card-desc">Log files with debt, rate severity, track status on a kanban-style board.</div>
+        <span class="badge badge-soon">Coming soon</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Cybersecurity -->
+  <div class="section">
+    <div class="section-title">Cybersecurity</div>
+    <div class="grid">
+
+      <div class="card soon">
+        <div class="card-tag">Security</div>
+        <div class="card-icon">⚔️</div>
+        <div class="card-title">Attack Scenario Simulator</div>
+        <div class="card-desc">Pick a vulnerability (XSS, SQLi, IDOR…), walk through attacker steps and the defensive countermeasures interactively.</div>
+        <span class="badge badge-soon">Coming soon</span>
+      </div>
+
+      <div class="card soon">
+        <div class="card-tag">Security</div>
+        <div class="card-icon">✅</div>
+        <div class="card-title">Vulnerability Checklist</div>
+        <div class="card-desc">Layer-by-layer security audit checklist for PHP, MySQL, REST API, and Vue. Track what you've hardened.</div>
+        <span class="badge badge-soon">Coming soon</span>
+      </div>
+
+      <div class="card soon">
+        <div class="card-tag">Security</div>
+        <div class="card-icon">💸</div>
+        <div class="card-title">Race Condition Puzzle</div>
+        <div class="card-desc">A payment scenario with a hidden flaw — find the race condition or business logic bug before the answer is revealed.</div>
+        <span class="badge badge-soon">Coming soon</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Codebase -->
+  <div class="section">
+    <div class="section-title">Understanding a New Codebase</div>
+    <div class="grid">
+
+      <div class="card soon">
+        <div class="card-tag">Codebase</div>
+        <div class="card-icon">🕸️</div>
+        <div class="card-title">Dependency Graph</div>
+        <div class="card-desc">Paste a list of modules or classes and visualize how they connect — spot circular dependencies and entry points.</div>
+        <span class="badge badge-soon">Coming soon</span>
+      </div>
+
+      <div class="card soon">
+        <div class="card-tag">Codebase</div>
+        <div class="card-icon">🎯</div>
+        <div class="card-title">Codebase Radar</div>
+        <div class="card-desc">Rate your familiarity across layers (DB, API, frontend, auth) and watch a spider chart update live.</div>
+        <span class="badge badge-soon">Coming soon</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- German -->
+  <div class="section">
+    <div class="section-title">German A1–B1</div>
+    <div class="grid">
+
+      <div class="card soon">
+        <div class="card-tag">German</div>
+        <div class="card-icon">🃏</div>
+        <div class="card-title">Spaced Repetition Flashcards</div>
+        <div class="card-desc">Build decks for vocabulary, cases, or verb conjugations. Cards resurface based on spaced repetition intervals.</div>
+        <span class="badge badge-soon">Coming soon</span>
+      </div>
+
+      <div class="card soon">
+        <div class="card-tag">German</div>
+        <div class="card-icon">🧱</div>
+        <div class="card-title">Case Trainer</div>
+        <div class="card-desc">Interactive sentence builder that highlights Nominativ, Akkusativ, Dativ, and Genitiv as you construct sentences.</div>
+        <span class="badge badge-soon">Coming soon</span>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+</body>
+</html>

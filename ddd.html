@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DDD: Aggregates & Bounded Contexts</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#0f1117;color:#e2e8f0;height:100vh;display:flex;flex-direction:column}
+header{padding:12px 20px;border-bottom:1px solid #2d3748;display:flex;align-items:center;gap:12px}
+header h1{font-size:16px;font-weight:600;color:#90cdf4}
+header p{font-size:12px;color:#718096}
+.legend{display:flex;gap:12px;margin-left:auto;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#a0aec0}
+.legend-dot{width:10px;height:10px;border-radius:2px}
+main{display:flex;flex:1;overflow:hidden}
+#canvas-wrap{flex:1;overflow:auto;padding:20px;position:relative}
+svg{min-width:900px}
+#panel{width:380px;border-left:1px solid #2d3748;display:flex;flex-direction:column;background:#141824;transition:transform .2s}
+#panel.hidden{display:none}
+#panel-header{padding:14px 16px;border-bottom:1px solid #2d3748;display:flex;justify-content:space-between;align-items:center}
+#panel-header h2{font-size:14px;font-weight:600}
+#panel-close{background:none;border:none;color:#718096;cursor:pointer;font-size:18px;line-height:1}
+#panel-close:hover{color:#e2e8f0}
+#panel-body{padding:16px;overflow-y:auto;flex:1;font-size:13px;line-height:1.6}
+.tag{display:inline-block;padding:2px 8px;border-radius:9px;font-size:10px;font-weight:600;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
+#panel-body h3{font-size:13px;font-weight:600;color:#90cdf4;margin:14px 0 5px}
+#panel-body p{color:#a0aec0;margin-bottom:8px}
+#panel-body ul{color:#a0aec0;padding-left:16px;margin-bottom:8px}
+#panel-body ul li{margin-bottom:3px}
+pre{background:#0a0d14;border:1px solid #2d3748;border-radius:6px;padding:12px;overflow-x:auto;font-size:11px;line-height:1.5;color:#a8d8a8;margin-top:6px}
+.ctx-box{rx:10;ry:10}
+.node{cursor:pointer;transition:filter .15s}
+.node:hover rect,.node:hover ellipse{filter:brightness(1.3)}
+.node rect,.node ellipse{transition:all .15s}
+.node.selected rect,.node.selected ellipse{stroke-width:2.5!important}
+.cross-badge{font-size:9px;fill:#fbd38d}
+.edge-label{font-size:9px;fill:#718096}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>DDD — Aggregates &amp; Bounded Contexts</h1>
+    <p>Payments domain decomposition · Click any node to explore</p>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#4a7fb5"></div>Aggregate Root</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#4a9e8e"></div>Entity</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#7c6fb5"></div>Value Object</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#b5824a"></div>Domain Event</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#c05252"></div>ACL</div>
+  </div>
+</header>
+<main>
+<div id="canvas-wrap">
+<svg id="svg" viewBox="0 0 920 560" xmlns="http://www.w3.org/2000/svg">
+
+<!-- BG contexts -->
+<!-- Billing -->
+<rect class="ctx-box" x="10" y="10" width="370" height="530" rx="12" fill="#141e2e" stroke="#2a4a7f" stroke-width="1.5"/>
+<text x="26" y="34" font-size="13" font-weight="600" fill="#5a8fbf">Billing Context</text>
+
+<!-- Identity -->
+<rect class="ctx-box" x="390" y="10" width="250" height="530" rx="12" fill="#141e28" stroke="#2a4a5f" stroke-width="1.5"/>
+<text x="406" y="34" font-size="13" font-weight="600" fill="#5a8fbf">Identity Context</text>
+
+<!-- Notifications -->
+<rect class="ctx-box" x="650" y="10" width="260" height="530" rx="12" fill="#1a1428" stroke="#3a2a5f" stroke-width="1.5"/>
+<text x="666" y="34" font-size="13" font-weight="600" fill="#5a8fbf">Notifications Context</text>
+
+<!-- ===== BILLING CONTEXT ===== -->
+
+<!-- Payment Aggregate Root -->
+<g class="node" id="n-payment" onclick="show('payment')">
+  <rect x="30" y="50" width="150" height="46" rx="7" fill="#1e3a5f" stroke="#4a7fb5" stroke-width="1.5"/>
+  <text x="105" y="70" text-anchor="middle" font-size="12" font-weight="600" fill="#90cdf4">Payment</text>
+  <text x="105" y="85" text-anchor="middle" font-size="9" fill="#4a7fb5">«Aggregate Root»</text>
+</g>
+
+<!-- PaymentMethod Entity -->
+<g class="node" id="n-paymentmethod" onclick="show('paymentmethod')">
+  <rect x="30" y="120" width="150" height="40" rx="7" fill="#1a3a30" stroke="#4a9e8e" stroke-width="1.5"/>
+  <text x="105" y="137" text-anchor="middle" font-size="12" font-weight="600" fill="#81e6d9">PaymentMethod</text>
+  <text x="105" y="151" text-anchor="middle" font-size="9" fill="#4a9e8e">«Entity»</text>
+</g>
+
+<!-- LineItem Entity -->
+<g class="node" id="n-lineitem" onclick="show('lineitem')">
+  <rect x="30" y="180" width="150" height="40" rx="7" fill="#1a3a30" stroke="#4a9e8e" stroke-width="1.5"/>
+  <text x="105" y="197" text-anchor="middle" font-size="12" font-weight="600" fill="#81e6d9">LineItem</text>
+  <text x="105" y="211" text-anchor="middle" font-size="9" fill="#4a9e8e">«Entity»</text>
+</g>
+
+<!-- Money VO -->
+<g class="node" id="n-money" onclick="show('money')">
+  <rect x="200" y="50" width="140" height="40" rx="7" fill="#231e3a" stroke="#7c6fb5" stroke-width="1.5"/>
+  <text x="270" y="67" text-anchor="middle" font-size="12" font-weight="600" fill="#b794f4">Money</text>
+  <text x="270" y="81" text-anchor="middle" font-size="9" fill="#7c6fb5">«Value Object»</text>
+</g>
+
+<!-- Currency VO -->
+<g class="node" id="n-currency" onclick="show('currency')">
+  <rect x="200" y="110" width="140" height="40" rx="7" fill="#231e3a" stroke="#7c6fb5" stroke-width="1.5"/>
+  <text x="270" y="127" text-anchor="middle" font-size="12" font-weight="600" fill="#b794f4">Currency</text>
+  <text x="270" y="141" text-anchor="middle" font-size="9" fill="#7c6fb5">«Value Object»</text>
+</g>
+
+<!-- PaymentStatus VO -->
+<g class="node" id="n-paymentstatus" onclick="show('paymentstatus')">
+  <rect x="200" y="170" width="140" height="40" rx="7" fill="#231e3a" stroke="#7c6fb5" stroke-width="1.5"/>
+  <text x="270" y="187" text-anchor="middle" font-size="12" font-weight="600" fill="#b794f4">PaymentStatus</text>
+  <text x="270" y="201" text-anchor="middle" font-size="9" fill="#7c6fb5">«Value Object»</text>
+</g>
+
+<!-- Invoice Aggregate Root -->
+<g class="node" id="n-invoice" onclick="show('invoice')">
+  <rect x="30" y="250" width="150" height="46" rx="7" fill="#1e3a5f" stroke="#4a7fb5" stroke-width="1.5"/>
+  <text x="105" y="270" text-anchor="middle" font-size="12" font-weight="600" fill="#90cdf4">Invoice</text>
+  <text x="105" y="285" text-anchor="middle" font-size="9" fill="#4a7fb5">«Aggregate Root»</text>
+</g>
+
+<!-- Domain Events -->
+<g class="node" id="n-paymentcreated" onclick="show('paymentcreated')">
+  <rect x="30" y="330" width="150" height="40" rx="7" fill="#3a2010" stroke="#b5824a" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <text x="105" y="347" text-anchor="middle" font-size="11" font-weight="600" fill="#f6ad55">PaymentCreated</text>
+  <text x="105" y="361" text-anchor="middle" font-size="9" fill="#b5824a">«Domain Event»</text>
+</g>
+
+<g class="node" id="n-paymentfailed" onclick="show('paymentfailed')">
+  <rect x="200" y="330" width="150" height="40" rx="7" fill="#3a2010" stroke="#b5824a" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <text x="275" y="347" text-anchor="middle" font-size="11" font-weight="600" fill="#f6ad55">PaymentFailed</text>
+  <text x="275" y="361" text-anchor="middle" font-size="9" fill="#b5824a">«Domain Event»</text>
+</g>
+
+<g class="node" id="n-invoiceissued" onclick="show('invoiceissued')">
+  <rect x="30" y="390" width="150" height="40" rx="7" fill="#3a2010" stroke="#b5824a" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <text x="105" y="407" text-anchor="middle" font-size="11" font-weight="600" fill="#f6ad55">InvoiceIssued</text>
+  <text x="105" y="421" text-anchor="middle" font-size="9" fill="#b5824a">«Domain Event»</text>
+</g>
+
+<!-- Refund Policy (Domain Service) -->
+<g class="node" id="n-refundpolicy" onclick="show('refundpolicy')">
+  <rect x="200" y="390" width="150" height="40" rx="7" fill="#1f2a1f" stroke="#5a8f5a" stroke-width="1.5" stroke-dasharray="6,2"/>
+  <text x="275" y="407" text-anchor="middle" font-size="11" font-weight="600" fill="#9ae6b4">RefundPolicy</text>
+  <text x="275" y="421" text-anchor="middle" font-size="9" fill="#5a8f5a">«Domain Service»</text>
+</g>
+
+<!-- ===== IDENTITY CONTEXT ===== -->
+
+<g class="node" id="n-customer" onclick="show('customer')">
+  <rect x="408" y="50" width="150" height="46" rx="7" fill="#1e3a5f" stroke="#4a7fb5" stroke-width="1.5"/>
+  <text x="483" y="70" text-anchor="middle" font-size="12" font-weight="600" fill="#90cdf4">Customer</text>
+  <text x="483" y="85" text-anchor="middle" font-size="9" fill="#4a7fb5">«Aggregate Root»</text>
+</g>
+
+<g class="node" id="n-address" onclick="show('address')">
+  <rect x="408" y="120" width="150" height="40" rx="7" fill="#231e3a" stroke="#7c6fb5" stroke-width="1.5"/>
+  <text x="483" y="137" text-anchor="middle" font-size="12" font-weight="600" fill="#b794f4">Address</text>
+  <text x="483" y="151" text-anchor="middle" font-size="9" fill="#7c6fb5">«Value Object»</text>
+</g>
+
+<g class="node" id="n-email" onclick="show('email')">
+  <rect x="408" y="180" width="150" height="40" rx="7" fill="#231e3a" stroke="#7c6fb5" stroke-width="1.5"/>
+  <text x="483" y="197" text-anchor="middle" font-size="12" font-weight="600" fill="#b794f4">Email</text>
+  <text x="483" y="211" text-anchor="middle" font-size="9" fill="#7c6fb5">«Value Object»</text>
+</g>
+
+<!-- ACL in Identity -->
+<g class="node" id="n-acl-billing" onclick="show('acl-billing')">
+  <rect x="408" y="250" width="215" height="40" rx="7" fill="#3a1010" stroke="#c05252" stroke-width="1.5" stroke-dasharray="5,2"/>
+  <text x="515" y="267" text-anchor="middle" font-size="11" font-weight="600" fill="#fc8181">CustomerTranslator</text>
+  <text x="515" y="281" text-anchor="middle" font-size="9" fill="#c05252">«ACL → Billing»</text>
+</g>
+
+<g class="node" id="n-customerregistered" onclick="show('customerregistered')">
+  <rect x="408" y="320" width="215" height="40" rx="7" fill="#3a2010" stroke="#b5824a" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <text x="515" y="337" text-anchor="middle" font-size="11" font-weight="600" fill="#f6ad55">CustomerRegistered</text>
+  <text x="515" y="351" text-anchor="middle" font-size="9" fill="#b5824a">«Domain Event»</text>
+</g>
+
+<!-- ===== NOTIFICATIONS CONTEXT ===== -->
+
+<g class="node" id="n-notification" onclick="show('notification')">
+  <rect x="668" y="50" width="220" height="46" rx="7" fill="#1e3a5f" stroke="#4a7fb5" stroke-width="1.5"/>
+  <text x="778" y="70" text-anchor="middle" font-size="12" font-weight="600" fill="#90cdf4">Notification</text>
+  <text x="778" y="85" text-anchor="middle" font-size="9" fill="#4a7fb5">«Aggregate Root»</text>
+</g>
+
+<g class="node" id="n-channel" onclick="show('channel')">
+  <rect x="668" y="120" width="100" height="40" rx="7" fill="#231e3a" stroke="#7c6fb5" stroke-width="1.5"/>
+  <text x="718" y="137" text-anchor="middle" font-size="12" font-weight="600" fill="#b794f4">Channel</text>
+  <text x="718" y="151" text-anchor="middle" font-size="9" fill="#7c6fb5">«Value Object»</text>
+</g>
+
+<g class="node" id="n-template" onclick="show('template')">
+  <rect x="790" y="120" width="100" height="40" rx="7" fill="#1a3a30" stroke="#4a9e8e" stroke-width="1.5"/>
+  <text x="840" y="137" text-anchor="middle" font-size="12" font-weight="600" fill="#81e6d9">Template</text>
+  <text x="840" y="151" text-anchor="middle" font-size="9" fill="#4a9e8e">«Entity»</text>
+</g>
+
+<!-- ACL in Notifications -->
+<g class="node" id="n-acl-notif" onclick="show('acl-notif')">
+  <rect x="668" y="190" width="220" height="40" rx="7" fill="#3a1010" stroke="#c05252" stroke-width="1.5" stroke-dasharray="5,2"/>
+  <text x="778" y="207" text-anchor="middle" font-size="11" font-weight="600" fill="#fc8181">NotificationACL</text>
+  <text x="778" y="221" text-anchor="middle" font-size="9" fill="#c05252">«ACL → Billing/Identity»</text>
+</g>
+
+<g class="node" id="n-notif-sent" onclick="show('notif-sent')">
+  <rect x="668" y="260" width="220" height="40" rx="7" fill="#3a2010" stroke="#b5824a" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <text x="778" y="277" text-anchor="middle" font-size="11" font-weight="600" fill="#f6ad55">NotificationSent</text>
+  <text x="778" y="291" text-anchor="middle" font-size="9" fill="#b5824a">«Domain Event»</text>
+</g>
+
+<!-- Cross-context event arrows -->
+<!-- PaymentCreated → NotificationACL -->
+<line x1="105" y1="370" x2="105" y2="460" stroke="#b5824a" stroke-width="1" stroke-dasharray="3,3" opacity=".5"/>
+<line x1="105" y1="460" x2="668" y2="210" stroke="#b5824a" stroke-width="1" stroke-dasharray="3,3" opacity=".5"/>
+<text x="380" y="440" font-size="9" fill="#b5824a" text-anchor="middle">publishes event</text>
+<polygon points="664,209 672,206 671,213" fill="#b5824a" opacity=".7"/>
+
+<!-- PaymentCreated → CustomerTranslator (ACL) -->
+<line x1="180" y1="350" x2="408" y2="270" stroke="#c05252" stroke-width="1" stroke-dasharray="3,3" opacity=".5"/>
+<text x="290" y="295" font-size="9" fill="#c05252" text-anchor="middle">subscribes via ACL</text>
+<polygon points="404,271 413,268 412,276" fill="#c05252" opacity=".7"/>
+
+<!-- CustomerRegistered → NotificationACL -->
+<line x1="515" y1="360" x2="515" y2="430" stroke="#b5824a" stroke-width="1" stroke-dasharray="3,3" opacity=".5"/>
+<line x1="515" y1="430" x2="778" y2="230" stroke="#b5824a" stroke-width="1" stroke-dasharray="3,3" opacity=".5"/>
+<polygon points="775,231 783,228 782,235" fill="#b5824a" opacity=".7"/>
+
+<!-- Internal arrows -->
+<line x1="105" y1="96" x2="105" y2="120" stroke="#4a9e8e" stroke-width="1" stroke-dasharray="2,2" opacity=".6"/>
+<line x1="105" y1="160" x2="105" y2="180" stroke="#4a9e8e" stroke-width="1" stroke-dasharray="2,2" opacity=".6"/>
+<line x1="180" y1="73" x2="200" y2="70" stroke="#7c6fb5" stroke-width="1" stroke-dasharray="2,2" opacity=".6"/>
+<line x1="483" y1="96" x2="483" y2="120" stroke="#7c6fb5" stroke-width="1" stroke-dasharray="2,2" opacity=".6"/>
+<line x1="483" y1="160" x2="483" y2="180" stroke="#7c6fb5" stroke-width="1" stroke-dasharray="2,2" opacity=".6"/>
+<line x1="778" y1="96" x2="778" y2="120" stroke="#4a9e8e" stroke-width="1" stroke-dasharray="2,2" opacity=".6"/>
+
+<!-- Event labels -->
+<text x="30" y="480" font-size="10" fill="#4a5568">⚡ Dashed borders = Domain Events &nbsp;&nbsp; ⛔ Red dashed = ACL (Anti-Corruption Layer)</text>
+<text x="30" y="498" font-size="10" fill="#4a5568">🔗 Orange arrows = cross-context event flow &nbsp;&nbsp; 💜 Purple = immutable Value Objects</text>
+
+</svg>
+</div>
+
+<!-- Side Panel -->
+<div id="panel" class="hidden">
+  <div id="panel-header">
+    <h2 id="panel-title">-</h2>
+    <button id="panel-close" onclick="closePanel()">×</button>
+  </div>
+  <div id="panel-body" id="panel-body"></div>
+</div>
+</main>
+
+<script>
+const DATA = {
+  payment: {
+    title: "Payment",
+    tag: "Aggregate Root", tagColor: "#4a7fb5", tagBg: "#1e3a5f",
+    what: "The central aggregate in Billing. Owns PaymentMethod and LineItems. Enforces consistency rules like 'a payment cannot be refunded after 30 days'. All changes go through Payment — no direct mutation of children.",
+    rules: ["Only one PaymentMethod allowed per Payment", "Total must equal sum of LineItems", "State transitions: Pending → Authorized → Captured → Refunded", "Raise PaymentCreated event on creation"],
+    code: `<?php
+final class Payment
+{
+    private PaymentId $id;
+    private Money $total;
+    private PaymentStatus $status;
+    private PaymentMethod $method;
+    /** @var LineItem[] */
+    private array $lineItems = [];
+    private array $domainEvents = [];
+
+    public function __construct(
+        PaymentId $id,
+        Money $total,
+        PaymentMethod $method
+    ) {
+        $this->id = $id;
+        $this->total = $total;
+        $this->status = PaymentStatus::PENDING;
+        $this->method = $method;
+        $this->domainEvents[] = new PaymentCreated($id, $total);
+    }
+
+    public function capture(): void
+    {
+        if (!$this->status->equals(PaymentStatus::AUTHORIZED)) {
+            throw new \\DomainException('Only authorized payments can be captured');
+        }
+        $this->status = PaymentStatus::CAPTURED;
+    }
+
+    public function pullDomainEvents(): array
+    {
+        $events = $this->domainEvents;
+        $this->domainEvents = [];
+        return $events;
+    }
+}`
+  },
+  paymentmethod: {
+    title: "PaymentMethod",
+    tag: "Entity", tagColor: "#4a9e8e", tagBg: "#1a3a30",
+    what: "An Entity inside the Payment aggregate. Has its own identity (card token, bank account ID) but can only be accessed through the Payment aggregate root — never directly.",
+    rules: ["Has a unique PaymentMethodId", "Must belong to a Payment", "Not accessible from outside the aggregate directly", "Card details never stored — only tokenized reference"],
+    code: `<?php
+final class PaymentMethod
+{
+    private PaymentMethodId $id;
+    private string $token;      // Stripe/PSP token, never raw card
+    private string $type;       // 'card', 'bank_transfer'
+
+    public function __construct(
+        PaymentMethodId $id,
+        string $token,
+        string $type
+    ) {
+        if (empty($token)) {
+            throw new \\DomainException('Token cannot be empty');
+        }
+        $this->id = $id;
+        $this->token = $token;
+        $this->type = $type;
+    }
+
+    public function getToken(): string
+    {
+        return $this->token;
+    }
+}`
+  },
+  lineitem: {
+    title: "LineItem",
+    tag: "Entity", tagColor: "#4a9e8e", tagBg: "#1a3a30",
+    what: "Represents a single chargeable item within a Payment. Has identity but lives inside the Payment aggregate boundary.",
+    rules: ["Quantity must be > 0", "Price must be non-negative", "Cannot exist outside a Payment"],
+    code: `<?php
+final class LineItem
+{
+    private LineItemId $id;
+    private string $description;
+    private Money $unitPrice;
+    private int $quantity;
+
+    public function __construct(
+        LineItemId $id,
+        string $description,
+        Money $unitPrice,
+        int $quantity
+    ) {
+        if ($quantity <= 0) {
+            throw new \\DomainException('Quantity must be positive');
+        }
+        $this->id = $id;
+        $this->description = $description;
+        $this->unitPrice = $unitPrice;
+        $this->quantity = $quantity;
+    }
+
+    public function subtotal(): Money
+    {
+        return $this->unitPrice->multiply($this->quantity);
+    }
+}`
+  },
+  money: {
+    title: "Money",
+    tag: "Value Object", tagColor: "#7c6fb5", tagBg: "#231e3a",
+    what: "Immutable Value Object representing an amount + currency. Two Money instances with the same amount and currency are equal. No identity. Replacing it creates a new instance.",
+    rules: ["Immutable — all operations return new instances", "Amount stored in minor units (cents) to avoid float issues", "Cannot add Money of different currencies", "Equality based on amount + currency"],
+    code: `<?php
+final class Money
+{
+    public function __construct(
+        private readonly int $amountInCents,  // 1000 = $10.00
+        private readonly Currency $currency
+    ) {
+        if ($amountInCents < 0) {
+            throw new \\DomainException('Amount cannot be negative');
+        }
+    }
+
+    public function add(Money $other): self
+    {
+        if (!$this->currency->equals($other->currency)) {
+            throw new \\DomainException('Cannot add different currencies');
+        }
+        return new self(
+            $this->amountInCents + $other->amountInCents,
+            $this->currency
+        );
+    }
+
+    public function multiply(int $factor): self
+    {
+        return new self($this->amountInCents * $factor, $this->currency);
+    }
+
+    public function equals(Money $other): bool
+    {
+        return $this->amountInCents === $other->amountInCents
+            && $this->currency->equals($other->currency);
+    }
+}`
+  },
+  currency: {
+    title: "Currency",
+    tag: "Value Object", tagColor: "#7c6fb5", tagBg: "#231e3a",
+    what: "Immutable Value Object wrapping an ISO 4217 currency code. Prevents invalid currencies from entering the domain.",
+    rules: ["Must be a valid ISO 4217 code", "Immutable", "Equality by code"],
+    code: `<?php
+final class Currency
+{
+    private const VALID = ['USD', 'EUR', 'GBP', 'AED', 'SAR'];
+
+    public function __construct(private readonly string $code)
+    {
+        if (!in_array(strtoupper($code), self::VALID, true)) {
+            throw new \\DomainException("Invalid currency: {$code}");
+        }
+        $this->code = strtoupper($code);
+    }
+
+    public function equals(Currency $other): bool
+    {
+        return $this->code === $other->code;
+    }
+
+    public function __toString(): string
+    {
+        return $this->code;
+    }
+}`
+  },
+  paymentstatus: {
+    title: "PaymentStatus",
+    tag: "Value Object", tagColor: "#7c6fb5", tagBg: "#231e3a",
+    what: "An enum-like Value Object representing the lifecycle state of a Payment. Using a VO instead of a plain string makes transitions type-safe.",
+    rules: ["Valid values: PENDING, AUTHORIZED, CAPTURED, FAILED, REFUNDED", "Immutable — state changes create new Payment, not mutate status", "Drives business rule checks (can only refund CAPTURED)"],
+    code: `<?php
+final class PaymentStatus
+{
+    public const PENDING    = 'pending';
+    public const AUTHORIZED = 'authorized';
+    public const CAPTURED   = 'captured';
+    public const FAILED     = 'failed';
+    public const REFUNDED   = 'refunded';
+
+    private static array $valid = [
+        self::PENDING, self::AUTHORIZED,
+        self::CAPTURED, self::FAILED, self::REFUNDED,
+    ];
+
+    public function __construct(private readonly string $value)
+    {
+        if (!in_array($value, self::$valid, true)) {
+            throw new \\DomainException("Invalid status: {$value}");
+        }
+    }
+
+    public function equals(self $other): bool
+    {
+        return $this->value === $other->value;
+    }
+
+    public static function pending(): self { return new self(self::PENDING); }
+    public static function captured(): self { return new self(self::CAPTURED); }
+}`
+  },
+  invoice: {
+    title: "Invoice",
+    tag: "Aggregate Root", tagColor: "#4a7fb5", tagBg: "#1e3a5f",
+    what: "Second aggregate in Billing. An Invoice is generated from a captured Payment but has its own lifecycle (draft, issued, paid, overdue). Separate aggregate because its consistency rules differ from Payment.",
+    rules: ["Cannot be issued before a Payment is captured", "Once issued, line items are immutable", "Raises InvoiceIssued domain event", "Has its own InvoiceId — not Payment's ID"],
+    code: `<?php
+final class Invoice
+{
+    private InvoiceId $id;
+    private PaymentId $paymentId;  // Reference, not the object
+    private Money $amount;
+    private InvoiceStatus $status;
+
+    public static function fromPayment(
+        InvoiceId $id,
+        Payment $payment
+    ): self {
+        // Can only create from a captured payment
+        if (!$payment->isCaptured()) {
+            throw new \\DomainException(
+                'Invoice requires a captured payment'
+            );
+        }
+        return new self($id, $payment->getId(), $payment->getTotal());
+    }
+
+    public function issue(): void
+    {
+        $this->status = InvoiceStatus::issued();
+        $this->domainEvents[] = new InvoiceIssued($this->id);
+    }
+}`
+  },
+  paymentcreated: {
+    title: "PaymentCreated",
+    tag: "Domain Event", tagColor: "#b5824a", tagBg: "#3a2010",
+    what: "Raised when a Payment aggregate is successfully created. Published to the message bus. Notifications context subscribes to this to send a payment receipt email.",
+    rules: ["Immutable — events are facts, never change them", "Contains only primitive data (IDs, amounts) — not domain objects", "Published after the transaction commits", "Consumers must be idempotent"],
+    code: `<?php
+final class PaymentCreated
+{
+    public readonly \\DateTimeImmutable $occurredAt;
+
+    public function __construct(
+        public readonly string $paymentId,
+        public readonly int $amountInCents,
+        public readonly string $currency,
+        public readonly string $customerId,
+    ) {
+        $this->occurredAt = new \\DateTimeImmutable();
+    }
+}
+
+// In Payment constructor:
+$this->domainEvents[] = new PaymentCreated(
+    $this->id->toString(),
+    $this->total->amountInCents(),
+    (string) $this->total->currency(),
+    $customerId->toString(),
+);
+
+// Dispatcher (Application layer):
+$payment = $this->paymentRepo->save($payment);
+foreach ($payment->pullDomainEvents() as $event) {
+    $this->eventBus->publish($event);
+}`
+  },
+  paymentfailed: {
+    title: "PaymentFailed",
+    tag: "Domain Event", tagColor: "#b5824a", tagBg: "#3a2010",
+    what: "Raised when a payment attempt fails (declined, insufficient funds, gateway error). Notifications context subscribes to alert the customer.",
+    rules: ["Include failure reason code for downstream context logic", "Never expose raw PSP error messages — translate them", "Idempotency key required for retry safety"],
+    code: `<?php
+final class PaymentFailed
+{
+    public readonly \\DateTimeImmutable $occurredAt;
+
+    public function __construct(
+        public readonly string $paymentId,
+        public readonly string $customerId,
+        public readonly string $reason,   // 'insufficient_funds', 'expired_card'
+        public readonly string $gatewayCode,
+    ) {
+        $this->occurredAt = new \\DateTimeImmutable();
+    }
+}
+
+// Handler in Notifications context:
+class SendPaymentFailureNotification
+{
+    public function handle(PaymentFailed $event): void
+    {
+        $customer = $this->acl->translateCustomer($event->customerId);
+        $this->notifier->send(
+            channel: Channel::email(),
+            to: $customer->email(),
+            template: 'payment_failed',
+            data: ['reason' => $event->reason]
+        );
+    }
+}`
+  },
+  invoiceissued: {
+    title: "InvoiceIssued",
+    tag: "Domain Event", tagColor: "#b5824a", tagBg: "#3a2010",
+    what: "Raised by the Invoice aggregate when an invoice transitions to 'issued'. Downstream contexts (Notifications) use this to email the invoice PDF.",
+    rules: ["Must include invoice ID for consumer lookups", "Issued event is final — no updates to issued invoices", "Consumers fetch full invoice via their own query if needed"],
+    code: `<?php
+final class InvoiceIssued
+{
+    public readonly \\DateTimeImmutable $occurredAt;
+
+    public function __construct(
+        public readonly string $invoiceId,
+        public readonly string $customerId,
+        public readonly int $amountInCents,
+        public readonly string $currency,
+        public readonly string $dueDate,
+    ) {
+        $this->occurredAt = new \\DateTimeImmutable();
+    }
+}
+
+// Notification handler:
+class SendInvoiceEmail
+{
+    public function handle(InvoiceIssued $event): void
+    {
+        $pdf = $this->pdfGenerator->generate($event->invoiceId);
+        $this->mailer->send(
+            to: $event->customerId,
+            subject: 'Your invoice is ready',
+            attachment: $pdf
+        );
+    }
+}`
+  },
+  refundpolicy: {
+    title: "RefundPolicy",
+    tag: "Domain Service", tagColor: "#5a8f5a", tagBg: "#1f2a1f",
+    what: "A Domain Service that encapsulates refund eligibility logic. Used when the logic doesn't naturally belong to a single aggregate (e.g. it involves both Payment and Invoice).",
+    rules: ["Stateless — no identity, no persistence", "Lives in the domain layer, not application layer", "Called by application services or aggregates when needed", "Must not call repositories or external services"],
+    code: `<?php
+final class RefundPolicy
+{
+    private const REFUND_WINDOW_DAYS = 30;
+
+    public function canRefund(Payment $payment): bool
+    {
+        if (!$payment->isCaptured()) {
+            return false;
+        }
+
+        $capturedAt = $payment->getCapturedAt();
+        $daysSinceCapture = $capturedAt->diff(new \\DateTimeImmutable())->days;
+
+        return $daysSinceCapture <= self::REFUND_WINDOW_DAYS;
+    }
+
+    public function assertCanRefund(Payment $payment): void
+    {
+        if (!$this->canRefund($payment)) {
+            throw new \\DomainException(
+                'Payment is no longer eligible for refund'
+            );
+        }
+    }
+}
+
+// Usage in application service:
+$this->refundPolicy->assertCanRefund($payment);
+$payment->refund();`
+  },
+  customer: {
+    title: "Customer",
+    tag: "Aggregate Root", tagColor: "#4a7fb5", tagBg: "#1e3a5f",
+    what: "The root aggregate in the Identity context. Manages customer profile, email, address. Billing context does NOT use this object directly — it uses a CustomerTranslator ACL that maps Identity's Customer to Billing's own concept of a payer.",
+    rules: ["Email must be unique (enforced by repo)", "Address is a Value Object — immutable", "Raises CustomerRegistered on creation", "Billing stores only CustomerId, not the full Customer object"],
+    code: `<?php
+final class Customer
+{
+    private CustomerId $id;
+    private Email $email;
+    private Address $billingAddress;
+
+    public function __construct(
+        CustomerId $id,
+        Email $email,
+        Address $billingAddress
+    ) {
+        $this->id = $id;
+        $this->email = $email;
+        $this->billingAddress = $billingAddress;
+        $this->domainEvents[] = new CustomerRegistered(
+            $id->toString(),
+            $email->toString()
+        );
+    }
+
+    public function changeEmail(Email $newEmail): void
+    {
+        // Business rule: can't use a disposable email
+        if ($newEmail->isDisposable()) {
+            throw new \\DomainException('Disposable emails not allowed');
+        }
+        $this->email = $newEmail;
+    }
+}`
+  },
+  address: {
+    title: "Address",
+    tag: "Value Object", tagColor: "#7c6fb5", tagBg: "#231e3a",
+    what: "Immutable Value Object in Identity context. Contains street, city, country. Equality by all fields. Changing address means creating a new Address VO.",
+    rules: ["Immutable", "Country must be valid ISO 3166-1 alpha-2", "Equality by all fields", "No partial updates — replace whole object"],
+    code: `<?php
+final class Address
+{
+    public function __construct(
+        private readonly string $street,
+        private readonly string $city,
+        private readonly string $postalCode,
+        private readonly string $countryCode,  // ISO 3166-1 alpha-2
+    ) {
+        if (strlen($countryCode) !== 2) {
+            throw new \\DomainException('Invalid country code');
+        }
+    }
+
+    public function equals(Address $other): bool
+    {
+        return $this->street === $other->street
+            && $this->city === $other->city
+            && $this->postalCode === $other->postalCode
+            && $this->countryCode === $other->countryCode;
+    }
+
+    // Returns new instance — immutable
+    public function withCity(string $city): self
+    {
+        return new self(
+            $this->street, $city,
+            $this->postalCode, $this->countryCode
+        );
+    }
+}`
+  },
+  email: {
+    title: "Email",
+    tag: "Value Object", tagColor: "#7c6fb5", tagBg: "#231e3a",
+    what: "Self-validating Value Object. Ensures no raw strings masquerade as emails anywhere in the Identity domain. Prevents primitive obsession.",
+    rules: ["Validates format on construction", "Immutable", "Case-insensitive equality (lowercased on init)", "Exposes isDisposable() business rule"],
+    code: `<?php
+final class Email
+{
+    private readonly string $value;
+
+    public function __construct(string $value)
+    {
+        $normalized = strtolower(trim($value));
+        if (!filter_var($normalized, FILTER_VALIDATE_EMAIL)) {
+            throw new \\DomainException("Invalid email: {$value}");
+        }
+        $this->value = $normalized;
+    }
+
+    public function isDisposable(): bool
+    {
+        $disposableDomains = ['mailinator.com', 'guerrillamail.com'];
+        $domain = substr(strrchr($this->value, '@'), 1);
+        return in_array($domain, $disposableDomains, true);
+    }
+
+    public function equals(Email $other): bool
+    {
+        return $this->value === $other->value;
+    }
+
+    public function toString(): string { return $this->value; }
+}`
+  },
+  'acl-billing': {
+    title: "CustomerTranslator (ACL)",
+    tag: "Anti-Corruption Layer", tagColor: "#c05252", tagBg: "#3a1010",
+    what: "An Anti-Corruption Layer that Billing uses when it needs customer data from Identity. Instead of coupling Billing directly to Identity's Customer model, the ACL translates Identity's model into Billing's own Payer concept. This protects Billing's domain model from Identity's changes.",
+    rules: ["Billing never imports Identity domain objects directly", "ACL translates between contexts — not a simple proxy", "If Identity changes, only the ACL needs to update", "Can cache translated data to avoid cross-context coupling at runtime"],
+    code: `<?php
+// In Billing context:
+interface CustomerTranslator
+{
+    public function toPayer(string $customerId): Payer;
+}
+
+// Infrastructure implementation:
+final class HttpCustomerTranslator implements CustomerTranslator
+{
+    public function __construct(
+        private readonly IdentityApiClient $client
+    ) {}
+
+    public function toPayer(string $customerId): Payer
+    {
+        // Calls Identity context's API/service
+        $dto = $this->client->getCustomer($customerId);
+
+        // Translates to Billing's own Payer concept
+        return new Payer(
+            PayerId::from($dto->id),
+            new Email($dto->email),
+            new Address(
+                $dto->street,
+                $dto->city,
+                $dto->postalCode,
+                $dto->country
+            )
+        );
+    }
+}
+
+// Billing domain never sees Identity's Customer class`
+  },
+  customerregistered: {
+    title: "CustomerRegistered",
+    tag: "Domain Event", tagColor: "#b5824a", tagBg: "#3a2010",
+    what: "Published by Identity when a new customer registers. Notifications context subscribes to send a welcome email. Billing context can subscribe to pre-create a Payer record (eventual consistency).",
+    rules: ["Consumed by multiple contexts asynchronously", "Must be idempotent — re-delivery must be safe", "Include enough data so consumers don't need to call back", "Never include passwords or sensitive tokens"],
+    code: `<?php
+// Identity context publishes:
+final class CustomerRegistered
+{
+    public function __construct(
+        public readonly string $customerId,
+        public readonly string $email,
+        public readonly string $fullName,
+        public readonly \\DateTimeImmutable $occurredAt = new \\DateTimeImmutable(),
+    ) {}
+}
+
+// Notifications subscriber:
+class WelcomeEmailHandler
+{
+    public function handle(CustomerRegistered $event): void
+    {
+        $this->mailer->send(
+            to: $event->email,
+            template: 'welcome',
+            data: ['name' => $event->fullName]
+        );
+    }
+}
+
+// Billing subscriber (creates Payer record):
+class CreatePayerOnRegistration
+{
+    public function handle(CustomerRegistered $event): void
+    {
+        // Idempotent — skip if already exists
+        if ($this->payerRepo->exists($event->customerId)) return;
+        $this->payerRepo->save(new Payer($event->customerId, $event->email));
+    }
+}`
+  },
+  notification: {
+    title: "Notification",
+    tag: "Aggregate Root", tagColor: "#4a7fb5", tagBg: "#1e3a5f",
+    what: "Aggregate in Notifications context. Represents a single notification attempt (email, SMS, push). Tracks delivery status and retry attempts. Completely isolated from how Billing defines a 'payment' — it only knows about notification channels.",
+    rules: ["Max 3 retry attempts before marking as permanently failed", "Channel (email/SMS/push) is immutable after creation", "One Notification per event per customer — deduplication required", "Raises NotificationSent event on success"],
+    code: `<?php
+final class Notification
+{
+    private NotificationId $id;
+    private Channel $channel;
+    private Template $template;
+    private NotificationStatus $status;
+    private int $attempts = 0;
+    private const MAX_ATTEMPTS = 3;
+
+    public function send(NotificationSender $sender): void
+    {
+        if ($this->attempts >= self::MAX_ATTEMPTS) {
+            throw new \\DomainException('Max retry attempts exceeded');
+        }
+        $this->attempts++;
+
+        try {
+            $sender->send($this->channel, $this->template);
+            $this->status = NotificationStatus::sent();
+            $this->domainEvents[] = new NotificationSent($this->id);
+        } catch (SendingFailedException $e) {
+            $this->status = $this->attempts >= self::MAX_ATTEMPTS
+                ? NotificationStatus::permanentlyFailed()
+                : NotificationStatus::retryable();
+        }
+    }
+}`
+  },
+  channel: {
+    title: "Channel",
+    tag: "Value Object", tagColor: "#7c6fb5", tagBg: "#231e3a",
+    what: "Immutable Value Object representing the delivery channel for a notification. Encapsulates channel-specific validation (e.g. SMS needs a phone number, email needs an address).",
+    rules: ["Valid channels: email, sms, push", "Immutable after creation", "Channel-specific destination validation", "Equality by type + destination"],
+    code: `<?php
+final class Channel
+{
+    private const VALID_TYPES = ['email', 'sms', 'push'];
+
+    private function __construct(
+        private readonly string $type,
+        private readonly string $destination,
+    ) {}
+
+    public static function email(string $address): self
+    {
+        if (!filter_var($address, FILTER_VALIDATE_EMAIL)) {
+            throw new \\DomainException('Invalid email for channel');
+        }
+        return new self('email', $address);
+    }
+
+    public static function sms(string $phone): self
+    {
+        if (!preg_match('/^\\+[1-9]\\d{7,14}$/', $phone)) {
+            throw new \\DomainException('Invalid phone number');
+        }
+        return new self('sms', $phone);
+    }
+
+    public function equals(self $other): bool
+    {
+        return $this->type === $other->type
+            && $this->destination === $other->destination;
+    }
+}`
+  },
+  template: {
+    title: "Template",
+    tag: "Entity", tagColor: "#4a9e8e", tagBg: "#1a3a30",
+    what: "Entity within Notifications that holds the message template (subject, body). Has identity (TemplateId) and can be updated independently of Notifications.",
+    rules: ["Has its own TemplateId", "Subject and body can be updated (unlike VOs)", "Versioned — publishing a new version doesn't delete old", "Referenced by Notification aggregate"],
+    code: `<?php
+final class Template
+{
+    private TemplateId $id;
+    private string $slug;     // 'payment_failed', 'welcome'
+    private string $subject;
+    private string $body;     // Twig/Blade template string
+    private int $version;
+
+    public function update(string $subject, string $body): void
+    {
+        if (empty($subject) || empty($body)) {
+            throw new \\DomainException('Subject and body required');
+        }
+        $this->subject = $subject;
+        $this->body = $body;
+        $this->version++;
+    }
+
+    public function render(array $data): RenderedMessage
+    {
+        return RenderedMessage::from(
+            $this->renderString($this->subject, $data),
+            $this->renderString($this->body, $data)
+        );
+    }
+}`
+  },
+  'acl-notif': {
+    title: "NotificationACL",
+    tag: "Anti-Corruption Layer", tagColor: "#c05252", tagBg: "#3a1010",
+    what: "The ACL in the Notifications context. Subscribes to domain events from Billing and Identity. Translates those external events into Notifications context's own language before creating Notification aggregates. Prevents cross-context model leakage.",
+    rules: ["Notifications context has zero imports from Billing/Identity domain", "Translates event DTOs into local Notification commands", "Handles unknown event types gracefully (ignore, don't crash)", "Idempotent — duplicate events must not create duplicate notifications"],
+    code: `<?php
+// Notifications context ACL — listens to external events
+final class NotificationACL
+{
+    public function onPaymentCreated(array $eventData): void
+    {
+        // Map external event to internal Notification
+        $this->notificationService->create(
+            channel: Channel::email($eventData['customer_email']),
+            templateSlug: 'payment_receipt',
+            data: [
+                'amount' => $eventData['amount_in_cents'] / 100,
+                'currency' => $eventData['currency'],
+            ],
+            idempotencyKey: 'payment_created_' . $eventData['payment_id']
+        );
+    }
+
+    public function onPaymentFailed(array $eventData): void
+    {
+        $this->notificationService->create(
+            channel: Channel::email($eventData['customer_email']),
+            templateSlug: 'payment_failed',
+            data: ['reason' => $eventData['reason']],
+            idempotencyKey: 'payment_failed_' . $eventData['payment_id']
+        );
+    }
+
+    // Never reaches into Billing's domain — only reads the event payload
+}`
+  },
+  'notif-sent': {
+    title: "NotificationSent",
+    tag: "Domain Event", tagColor: "#b5824a", tagBg: "#3a2010",
+    what: "Published by the Notification aggregate when a message is successfully delivered. Can be used for analytics, audit logs, or updating a customer's notification preferences.",
+    rules: ["Published after confirmed delivery (not just queued)", "Include channel type for analytics segmentation", "Consumers should not re-trigger notifications from this event (avoid loops)"],
+    code: `<?php
+final class NotificationSent
+{
+    public function __construct(
+        public readonly string $notificationId,
+        public readonly string $channelType,     // 'email', 'sms'
+        public readonly string $destination,
+        public readonly string $templateSlug,
+        public readonly \\DateTimeImmutable $sentAt = new \\DateTimeImmutable(),
+    ) {}
+}
+
+// Analytics subscriber (different context):
+class TrackNotificationDelivery
+{
+    public function handle(NotificationSent $event): void
+    {
+        $this->analytics->track('notification_delivered', [
+            'channel'  => $event->channelType,
+            'template' => $event->templateSlug,
+            'sent_at'  => $event->sentAt->format('c'),
+        ]);
+    }
+}`
+  },
+};
+
+let selected = null;
+
+function show(id) {
+  const d = DATA[id];
+  if (!d) return;
+  if (selected) {
+    const prev = document.getElementById('n-' + selected);
+    if (prev) prev.classList.remove('selected');
+  }
+  selected = id;
+  const el = document.getElementById('n-' + id);
+  if (el) el.classList.add('selected');
+
+  document.getElementById('panel-title').textContent = d.title;
+  document.getElementById('panel').classList.remove('hidden');
+
+  const body = document.getElementById('panel-body');
+  body.innerHTML = `
+    <span class="tag" style="color:${d.tagColor};background:${d.tagBg}">${d.tag}</span>
+    <h3>What is it?</h3>
+    <p>${d.what}</p>
+    <h3>Rules</h3>
+    <ul>${d.rules.map(r=>`<li>${r}</li>`).join('')}</ul>
+    <h3>PHP Example</h3>
+    <pre>${escHtml(d.code)}</pre>
+  `;
+}
+
+function closePanel() {
+  document.getElementById('panel').classList.add('hidden');
+  if (selected) {
+    const el = document.getElementById('n-' + selected);
+    if (el) el.classList.remove('selected');
+    selected = null;
+  }
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
