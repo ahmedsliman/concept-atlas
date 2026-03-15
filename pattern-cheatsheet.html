@@ -5,315 +5,990 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Design Patterns Cheat Sheet</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,sans-serif;background:#0f1117;color:#e2e8f0;min-height:100vh}
-header{padding:12px 20px;border-bottom:1px solid #1e2533;display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;top:0;background:#0f1117;z-index:10}
-header h1{font-size:15px;font-weight:700}
-.filters{display:flex;gap:6px;flex-wrap:wrap}
-button{padding:5px 12px;border-radius:6px;border:1px solid #2d3748;background:#141824;color:#718096;font-size:11px;cursor:pointer;font-weight:500}
-button:hover{border-color:#4a7fb5;color:#90cdf4}
-button.active-all{border-color:#718096;color:#e2e8f0;background:#1e2533}
-button.active-c{border-color:#f6ad55;color:#f6ad55;background:#2a1e10}
-button.active-s{border-color:#90cdf4;color:#90cdf4;background:#10253a}
-button.active-b{border-color:#b794f4;color:#b794f4;background:#1e1030}
-.search-wrap{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:11px;color:#718096}
-#search{padding:5px 10px;background:#141824;border:1px solid #2d3748;border-radius:6px;color:#e2e8f0;font-size:12px;outline:none;width:160px}
-#search:focus{border-color:#4a7fb5}
-#progress{font-size:11px;color:#718096;white-space:nowrap}
-main{max-width:1000px;margin:0 auto;padding:20px}
-.section-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#4a5568;margin:24px 0 10px;padding-bottom:6px;border-bottom:1px solid #1e2533}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px;margin-bottom:8px}
-.card{border-radius:8px;border:1px solid #1e2533;background:#141824;overflow:hidden}
-.card-head{padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:8px}
-.card-head:hover{background:#161d2e}
-.dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
-.card-head .name{font-size:13px;font-weight:600;flex:1}
-.card-head .intent{font-size:11px;color:#718096;flex:2}
-.card-head .learned-cb{display:flex;align-items:center;gap:4px;font-size:10px;color:#4a5568;flex-shrink:0;cursor:pointer}
-.card-head .learned-cb input{cursor:pointer}
-.card-body{display:none;padding:12px 14px;border-top:1px solid #1e2533;font-size:12px}
-.card-body.open{display:block}
-.card-body h4{font-size:11px;font-weight:600;color:#90cdf4;margin:10px 0 4px;text-transform:uppercase;letter-spacing:.5px}
-.card-body h4:first-child{margin-top:0}
-.card-body ul{color:#a0aec0;padding-left:14px;margin-bottom:6px}
-.card-body ul li{margin-bottom:2px}
-.code-wrap{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
-pre{background:#0a0d14;border:1px solid #1e2533;border-radius:5px;padding:10px;font-size:10px;line-height:1.5;overflow-x:auto;color:#a8d8a8}
-.code-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
-.before .code-label{color:#fc8181}
-.after .code-label{color:#68d391}
-.payments-note{background:#141e2e;border:1px solid #2a3a5a;border-radius:5px;padding:8px 10px;font-size:11px;color:#90cdf4;margin-top:8px}
-.card.learned{opacity:.6}
-.card.learned .card-head{background:#0f1a0f}
-.hidden{display:none}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #0f1117;
+  color: #e2e8f0;
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #0f1117;
+  border-bottom: 1px solid #1e2533;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+header h1 { font-size: 16px; font-weight: 700; white-space: nowrap; }
+header h1 span { color: #718096; font-weight: 400; font-size: 13px; margin-left: 6px; }
+
+.filters { display: flex; gap: 6px; flex-wrap: wrap; }
+.filter-btn {
+  padding: 5px 13px;
+  border-radius: 20px;
+  border: 1px solid #2d3748;
+  background: transparent;
+  color: #718096;
+  font-size: 12px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all .15s;
+}
+.filter-btn:hover { border-color: #4a5568; color: #a0aec0; }
+.filter-btn.on { color: #fff; }
+.filter-btn.on.all  { border-color: #718096; background: #1e2533; }
+.filter-btn.on.c    { border-color: #f6ad55; background: #2a1e0f; color: #f6ad55; }
+.filter-btn.on.s    { border-color: #90cdf4; background: #0f1e2e; color: #90cdf4; }
+.filter-btn.on.b    { border-color: #b794f4; background: #1a0f2e; color: #b794f4; }
+
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+#search {
+  padding: 6px 12px;
+  background: #141824;
+  border: 1px solid #2d3748;
+  border-radius: 20px;
+  color: #e2e8f0;
+  font-size: 12px;
+  outline: none;
+  width: 180px;
+}
+#search:focus { border-color: #4a7fb5; }
+#progress { font-size: 11px; color: #4a5568; white-space: nowrap; }
+
+/* ── Main layout ── */
+main { max-width: 860px; margin: 0 auto; padding: 24px; }
+
+.section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #4a5568;
+  margin: 28px 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #1e2533;
+}
+
+/* ── Cards ── */
+.card {
+  border: 1px solid #1e2533;
+  border-radius: 10px;
+  background: #141824;
+  margin-bottom: 8px;
+  overflow: hidden;
+  transition: border-color .15s;
+}
+.card:hover { border-color: #2d3748; }
+.card.open  { border-color: #2d3748; }
+
+.card-head {
+  padding: 14px 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  user-select: none;
+}
+.card-head:hover { background: #161d2e; }
+
+.cat-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.head-text { flex: 1; min-width: 0; }
+.pattern-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin-bottom: 2px;
+}
+.pattern-intent {
+  font-size: 12px;
+  color: #718096;
+  line-height: 1.4;
+}
+
+.head-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.learned-toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #4a5568;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  transition: all .15s;
+}
+.learned-toggle:hover { border-color: #2d3748; color: #a0aec0; }
+.learned-toggle input { cursor: pointer; accent-color: #68d391; }
+.card.learned .learned-toggle { color: #68d391; }
+
+.chevron {
+  color: #4a5568;
+  font-size: 12px;
+  transition: transform .2s;
+}
+.card.open .chevron { transform: rotate(180deg); }
+
+/* ── Card body ── */
+.card-body {
+  display: none;
+  border-top: 1px solid #1e2533;
+  padding: 18px;
+}
+.card-body.open { display: block; }
+
+.section-head {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #4a7fb5;
+  margin-bottom: 8px;
+}
+
+.when-list {
+  list-style: none;
+  margin-bottom: 18px;
+}
+.when-list li {
+  font-size: 13px;
+  color: #a0aec0;
+  line-height: 1.5;
+  padding: 4px 0 4px 16px;
+  position: relative;
+}
+.when-list li::before {
+  content: '›';
+  position: absolute;
+  left: 0;
+  color: #4a5568;
+}
+
+/* ── Code tabs ── */
+.code-tabs { margin-bottom: 14px; }
+.tab-btns { display: flex; gap: 0; margin-bottom: 0; }
+.tab-btn {
+  padding: 6px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid #2d3748;
+  background: #0a0d14;
+  color: #4a5568;
+  transition: all .15s;
+  letter-spacing: .3px;
+}
+.tab-btn:first-child { border-radius: 6px 0 0 0; }
+.tab-btn:last-child  { border-radius: 0 6px 0 0; border-left: none; }
+.tab-btn.active-before { background: #2a1010; color: #fc8181; border-color: #5a2020; border-bottom-color: #2a1010; }
+.tab-btn.active-after  { background: #0f2a1a; color: #68d391; border-color: #1a5a2a; border-bottom-color: #0f2a1a; }
+
+.code-panel { display: none; }
+.code-panel.active { display: block; }
+
+pre {
+  background: #0a0d14;
+  border: 1px solid #2d3748;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  padding: 16px;
+  font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  overflow-x: auto;
+  color: #a8d8a8;
+  tab-size: 4;
+  white-space: pre;
+}
+.before-panel pre { border-color: #5a2020; }
+.after-panel  pre { border-color: #1a5a2a; }
+
+/* ── Payments note ── */
+.payments-note {
+  background: #101828;
+  border: 1px solid #1e3a5a;
+  border-left: 3px solid #4a7fb5;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #90cdf4;
+  line-height: 1.5;
+}
+.payments-note strong { color: #63b3ed; }
+
+/* ── Utility ── */
+.hidden { display: none !important; }
+.card.learned { opacity: .65; }
 </style>
 </head>
 <body>
+
 <header>
-  <h1>GoF Patterns</h1>
+  <h1>GoF Patterns <span>Most Used</span></h1>
+
   <div class="filters">
-    <button id="f-all" class="active-all" onclick="filter('all')">All 23</button>
-    <button id="f-c" onclick="filter('Creational')">Creational</button>
-    <button id="f-s" onclick="filter('Structural')">Structural</button>
-    <button id="f-b" onclick="filter('Behavioral')">Behavioral</button>
+    <button class="filter-btn on all" data-f="all" onclick="filter(this,'all')">All</button>
+    <button class="filter-btn c"     data-f="Creational"  onclick="filter(this,'Creational')">Creational</button>
+    <button class="filter-btn s"     data-f="Structural"  onclick="filter(this,'Structural')">Structural</button>
+    <button class="filter-btn b"     data-f="Behavioral"  onclick="filter(this,'Behavioral')">Behavioral</button>
   </div>
-  <div class="search-wrap">
-    <input id="search" placeholder="Search…" oninput="applyFilter()">
-    <span id="progress">0 / 23 learned</span>
+
+  <div class="header-right">
+    <input id="search" placeholder="Search patterns…" oninput="applyFilter()">
+    <span id="progress"></span>
   </div>
 </header>
+
 <main id="main"></main>
 
 <script>
 const PATTERNS = [
-  // Creational
-  {cat:'Creational',name:'Abstract Factory',intent:'Create families of related objects without specifying concrete classes.',
-   when:['You need to create multiple related objects that must work together','You want to swap entire product families easily','You need to enforce consistency among related objects'],
-   before:`<?php\n// Scattered, tightly coupled\n$gateway = new StripeGateway();\n$method = new StripePaymentMethod();\n// What if we switch to Braintree?`,
-   after:`<?php\ninterface PaymentFactory {\n  public function createGateway(): Gateway;\n  public function createMethod(): PaymentMethod;\n}\nclass StripeFactory implements PaymentFactory {\n  public function createGateway(): Gateway {\n    return new StripeGateway();\n  }\n  public function createMethod(): PaymentMethod {\n    return new StripeCard();\n  }\n}`,
-   note:'Swap your entire PSP (Stripe→Braintree) by injecting a different factory — no code changes elsewhere.'},
+  /* ── Creational ─────────────────────────────────────── */
+  {
+    cat: 'Creational', name: 'Singleton',
+    intent: 'Ensure a class has only one instance and provide a global access point.',
+    when: [
+      'Exactly one object must coordinate actions across the system',
+      'You need controlled access to a shared resource (config, logger, connection pool)',
+      'Instantiation is expensive and should happen once',
+    ],
+    before: `<?php
+// Multiple instances created everywhere — inconsistent state
+$db1 = new DatabaseConnection();  // creates connection #1
+$db2 = new DatabaseConnection();  // creates connection #2
+// They don't share state — bugs waiting to happen`,
+    after: `<?php
+final class DatabaseConnection
+{
+    private static ?self $instance = null;
 
-  {cat:'Creational',name:'Builder',intent:'Construct complex objects step by step.',
-   when:['Object construction requires many optional parameters','You want to avoid telescoping constructors','Same construction process should create different representations'],
-   before:`<?php\n// Telescoping constructor nightmare\nnew Payment(\n  $id, $amount, $currency,\n  $method, null, null, true, false\n);`,
-   after:`<?php\n$payment = (new PaymentBuilder())\n  ->withAmount(Money::of(1000, 'USD'))\n  ->withMethod($card)\n  ->withIdempotencyKey($key)\n  ->build();\n\nclass PaymentBuilder {\n  public function withAmount(Money $m): self {\n    $this->amount = $m;\n    return $this;\n  }\n  public function build(): Payment {\n    $this->validate();\n    return new Payment(...$this->fields);\n  }\n}`,
-   note:'Build complex Payment or Invoice objects with optional fields like metadata, idempotency keys, and retry config.'},
+    private function __construct(
+        private readonly \\PDO $pdo
+    ) {}
 
-  {cat:'Creational',name:'Factory Method',intent:'Define an interface for creating objects, but let subclasses decide which class to instantiate.',
-   when:['You do not know ahead of time what class to instantiate','Subclasses should control what they create','You want to localize object creation knowledge'],
-   before:`<?php\n// Hard-coded in every place\nif ($type === 'stripe') {\n  $gw = new StripeGateway();\n} elseif ($type === 'paypal') {\n  $gw = new PayPalGateway();\n}`,
-   after:`<?php\nabstract class PaymentProcessor {\n  abstract protected function createGateway(): Gateway;\n\n  public function process(Payment $p): void {\n    $gw = $this->createGateway();\n    $gw->charge($p);\n  }\n}\nclass StripeProcessor extends PaymentProcessor {\n  protected function createGateway(): Gateway {\n    return new StripeGateway(config('stripe'));\n  }\n}`,
-   note:'Each payment processor subclass creates its own gateway — new PSPs just add a new subclass.'},
+    public static function getInstance(): self
+    {
+        if (self::$instance === null) {
+            self::$instance = new self(
+                new \\PDO(getenv('DATABASE_URL'))
+            );
+        }
+        return self::$instance;
+    }
 
-  {cat:'Creational',name:'Prototype',intent:'Clone existing objects instead of creating new ones from scratch.',
-   when:['Object creation is expensive','You need many similar objects with small variations','Classes to instantiate are specified at runtime'],
-   before:`<?php\n// Re-building expensive config from scratch\n$config = new GatewayConfig();\n$config->setTimeout(30);\n$config->setRetries(3);\n// ... 20 more setup lines`,
-   after:`<?php\ninterface Cloneable {\n  public function clone(): static;\n}\nclass GatewayConfig implements Cloneable {\n  public function clone(): static {\n    return clone $this;\n  }\n  public function withTimeout(int $s): static {\n    $c = $this->clone();\n    $c->timeout = $s;\n    return $c;\n  }\n}\n// Reuse base config, vary per environment\n$prod = $base->withTimeout(10)->withRetries(1);`,
-   note:'Clone a base PSP configuration and vary only environment-specific settings (timeout, retries, endpoints).'},
+    public function query(string $sql): \\PDOStatement
+    {
+        return $this->pdo->query($sql);
+    }
+}
 
-  {cat:'Creational',name:'Singleton',intent:'Ensure a class has only one instance and provide a global access point.',
-   when:['Exactly one object is needed to coordinate actions across the system','You need to control access to a shared resource'],
-   before:`<?php\n// Multiple DB connections created\n$db1 = new DatabaseConnection();\n$db2 = new DatabaseConnection();\n// Wastes resources, inconsistent state`,
-   after:`<?php\nclass DatabaseConnection {\n  private static ?self $instance = null;\n  private function __construct() {}\n\n  public static function getInstance(): self {\n    if (self::$instance === null) {\n      self::$instance = new self();\n    }\n    return self::$instance;\n  }\n}\n// Usage: DatabaseConnection::getInstance()`,
-   note:'Use sparingly in payments — prefer dependency injection. Singletons make testing hard. Consider a DI container instead.'},
+// Always the same instance:
+$conn = DatabaseConnection::getInstance();`,
+    note: '<strong>Payments tip:</strong> Prefer dependency injection over singletons — they make testing hard. Use a DI container (Laravel\'s App::singleton) to get the same effect without the coupling.',
+  },
 
-  // Structural
-  {cat:'Structural',name:'Adapter',intent:'Convert the interface of a class into another interface clients expect.',
-   when:['You want to use an existing class but its interface does not match','You need to create a reusable class that cooperates with incompatible interfaces'],
-   before:`<?php\n// PSP returns its own types, incompatible\n$result = $stripe->charge($stripeRequest);\n// Can't use $result directly — wrong type`,
-   after:`<?php\ninterface GatewayResponse {\n  public function isSuccess(): bool;\n  public function getTransactionId(): string;\n}\nclass StripeResponseAdapter implements GatewayResponse {\n  public function __construct(\n    private Stripe\\Charge $charge\n  ) {}\n  public function isSuccess(): bool {\n    return $this->charge->status === 'succeeded';\n  }\n  public function getTransactionId(): string {\n    return $this->charge->id;\n  }\n}`,
-   note:'Wrap Stripe/PayPal responses in a common GatewayResponse interface — your domain code never sees PSP types.'},
+  {
+    cat: 'Creational', name: 'Factory Method',
+    intent: 'Define an interface for creating objects, but let subclasses decide which class to instantiate.',
+    when: [
+      'The exact class to instantiate is decided at runtime',
+      'Subclasses should control what objects they create',
+      'You want to eliminate hard-coded class names scattered across the codebase',
+    ],
+    before: `<?php
+// Hard-coded everywhere — adding a new PSP means editing multiple files
+if ($type === 'stripe') {
+    $gateway = new StripeGateway($config);
+} elseif ($type === 'paypal') {
+    $gateway = new PayPalGateway($config);
+} elseif ($type === 'braintree') {
+    $gateway = new BraintreeGateway($config);
+}`,
+    after: `<?php
+interface GatewayFactory
+{
+    public function create(): PaymentGateway;
+}
 
-  {cat:'Structural',name:'Bridge',intent:'Decouple an abstraction from its implementation so the two can vary independently.',
-   when:['You want to avoid permanent binding between abstraction and implementation','Both abstraction and implementation should be extensible through subclassing'],
-   before:`<?php\n// Explosion of subclasses\nclass StripeRecurringPayment {}\nclass StripeOneTimePayment {}\nclass PayPalRecurringPayment {}\nclass PayPalOneTimePayment {}`,
-   after:`<?php\ninterface PaymentGateway {\n  public function charge(Money $amount): Response;\n}\nabstract class PaymentType {\n  public function __construct(\n    protected PaymentGateway $gateway\n  ) {}\n  abstract public function process(Payment $p): void;\n}\nclass RecurringPayment extends PaymentType {\n  public function process(Payment $p): void {\n    // recurring logic\n    $this->gateway->charge($p->amount());\n  }\n}`,
-   note:'Separate payment type (recurring, one-time, installment) from the gateway (Stripe, PayPal). Add each independently.'},
+class StripeGatewayFactory implements GatewayFactory
+{
+    public function create(): PaymentGateway
+    {
+        return new StripeGateway(config('stripe'));
+    }
+}
 
-  {cat:'Structural',name:'Composite',intent:'Compose objects into tree structures to represent part-whole hierarchies.',
-   when:['You want clients to treat individual objects and compositions uniformly','You need to represent hierarchies of objects'],
-   before:`<?php\n// Special-casing everywhere\nif ($item instanceof BundleItem) {\n  $total += $item->totalPrice();\n} else {\n  $total += $item->price();\n}`,
-   after:`<?php\ninterface PriceableItem {\n  public function total(): Money;\n}\nclass SingleItem implements PriceableItem {\n  public function total(): Money { return $this->price; }\n}\nclass Bundle implements PriceableItem {\n  private array $items = [];\n  public function add(PriceableItem $i): void {\n    $this->items[] = $i;\n  }\n  public function total(): Money {\n    return array_reduce(\n      $this->items,\n      fn(Money $s, PriceableItem $i) => $s->add($i->total()),\n      Money::zero()\n    );\n  }\n}`,
-   note:'Model invoice line items as a composite — bundles contain items, items contain prices, total() works on both.'},
+class PayPalGatewayFactory implements GatewayFactory
+{
+    public function create(): PaymentGateway
+    {
+        return new PayPalGateway(config('paypal'));
+    }
+}
 
-  {cat:'Structural',name:'Decorator',intent:'Attach additional responsibilities to an object dynamically.',
-   when:['You want to add behavior to objects without affecting other objects of the same class','Extension by subclassing is impractical due to many combinations'],
-   before:`<?php\n// Subclass explosion for every combination\nclass LoggedRetryableStripeGateway\n  extends StripeGateway {}\n// Gets unmanageable fast`,
-   after:`<?php\nclass LoggingGateway implements PaymentGateway {\n  public function __construct(\n    private PaymentGateway $inner\n  ) {}\n  public function charge(Money $m): Response {\n    $this->logger->info('Charging', ['amount'=>$m]);\n    $r = $this->inner->charge($m);\n    $this->logger->info('Charged', ['tx'=>$r->id()]);\n    return $r;\n  }\n}\n// Wrap: new LoggingGateway(new RetryGateway($stripe))`,
-   note:'Add logging, retry, circuit-breaking to any gateway by wrapping — compose behaviours at boot time.'},
+// Resolved from DI container — no if/else anywhere:
+$gateway = $this->gatewayFactory->create();
+$gateway->charge($payment);`,
+    note: '<strong>Payments tip:</strong> New PSP = new factory class, zero changes to existing code. Register the factory in your DI container and swap it per environment (Stripe in prod, fake in tests).',
+  },
 
-  {cat:'Structural',name:'Facade',intent:'Provide a simplified interface to a complex subsystem.',
-   when:['You want to provide a simple interface to a complex body of code','There are many dependencies between clients and implementation classes'],
-   before:`<?php\n// Caller must know about 5 services\n$customer = $customerRepo->find($id);\n$method = $methodService->getDefault($customer);\n$invoice = $invoiceFactory->create($customer, $items);\n$tx = $gateway->charge($method, $invoice->total());\n$notifier->sendReceipt($customer, $tx);`,
-   after:`<?php\nclass CheckoutFacade {\n  public function checkout(\n    CustomerId $id,\n    array $items\n  ): CheckoutResult {\n    $customer = $this->customerRepo->find($id);\n    $method   = $this->methodService->getDefault($customer);\n    $invoice  = $this->invoiceFactory->create($customer, $items);\n    $tx       = $this->gateway->charge($method, $invoice->total());\n    $this->notifier->sendReceipt($customer, $tx);\n    return new CheckoutResult($tx, $invoice);\n  }\n}`,
-   note:'Expose a single CheckoutFacade::checkout() to the API layer — hides the orchestration complexity.'},
+  {
+    cat: 'Creational', name: 'Builder',
+    intent: 'Construct complex objects step by step, separating construction from representation.',
+    when: [
+      'An object requires many optional parameters (avoid telescoping constructors)',
+      'You want to produce different representations using the same construction steps',
+      'Construction must happen in a specific order with validation at the end',
+    ],
+    before: `<?php
+// Telescoping constructor — unreadable and fragile
+$payment = new Payment(
+    $id,
+    $amount,
+    $currency,
+    $method,
+    null,         // what is this?
+    true,         // and this?
+    false,
+    $idempotencyKey
+);`,
+    after: `<?php
+$payment = Payment::builder()
+    ->withId(PaymentId::generate())
+    ->withAmount(Money::of(1000, 'USD'))
+    ->withMethod($creditCard)
+    ->withIdempotencyKey($key)
+    ->withMetadata(['order_id' => '123'])
+    ->build();  // validates all required fields here
 
-  {cat:'Structural',name:'Flyweight',intent:'Use sharing to support large numbers of fine-grained objects efficiently.',
-   when:['A large number of similar objects consumes too much memory','Most object state can be made extrinsic (passed in, not stored)'],
-   before:`<?php\n// Every transaction stores its own currency data\nclass Transaction {\n  private string $currencyCode;\n  private string $currencySymbol;\n  private int $currencyDecimals;\n  // duplicated in millions of transactions\n}`,
-   after:`<?php\nclass CurrencyFlyweight {\n  private static array $pool = [];\n  public static function get(string $code): Currency {\n    return self::$pool[$code]\n      ??= new Currency($code); // created once\n  }\n}\nclass Transaction {\n  private Currency $currency; // shared instance\n  // intrinsic: amount\n  // extrinsic: currency (shared)\n}`,
-   note:'Share Currency instances across millions of transactions — one object per currency code instead of millions.'},
+class PaymentBuilder
+{
+    private ?Money $amount = null;
+    private ?PaymentMethod $method = null;
 
-  {cat:'Structural',name:'Proxy',intent:'Provide a surrogate or placeholder for another object to control access.',
-   when:['You need lazy initialization of a heavy object','You need to add access control, caching, or logging around an object'],
-   before:`<?php\n// Always fetches from DB even when unused\n$report = new PaymentReport($db); // expensive\nif ($user->wantsReport()) {\n  $report->generate();\n}`,
-   after:`<?php\nclass LazyPaymentReport implements Report {\n  private ?PaymentReport $real = null;\n  public function generate(): string {\n    if ($this->real === null) {\n      $this->real = new PaymentReport($this->db);\n    }\n    return $this->real->generate();\n  }\n}\n\n// Caching proxy example:\nclass CachedGatewayProxy implements Gateway {\n  public function getBalance(): Money {\n    return $this->cache->remember(\n      'balance', 60, fn() => $this->real->getBalance()\n    );\n  }\n}`,
-   note:'Wrap your PSP client in a proxy to add caching (balance checks), rate limiting, or circuit-breaking.'},
+    public function withAmount(Money $m): self
+    {
+        $this->amount = $m;
+        return $this;
+    }
 
-  // Behavioral
-  {cat:'Behavioral',name:'Chain of Responsibility',intent:'Pass a request along a chain of handlers until one handles it.',
-   when:['More than one object may handle a request','You want to issue a request without knowing which handler will process it'],
-   before:`<?php\n// Deeply nested if/else\nif ($payment->isFraud()) {\n  // ...\n} elseif ($payment->exceedsLimit()) {\n  // ...\n} elseif (!$payment->hasFunds()) {\n  // ...\n}`,
-   after:`<?php\ninterface PaymentRule {\n  public function setNext(PaymentRule $r): self;\n  public function check(Payment $p): RuleResult;\n}\nclass FraudRule implements PaymentRule {\n  public function check(Payment $p): RuleResult {\n    if ($this->isFraud($p))\n      return RuleResult::reject('Fraud detected');\n    return $this->next?->check($p) ?? RuleResult::pass();\n  }\n}\n// Chain: Fraud → Limit → Funds → KYC`,
-   note:'Model payment validation rules as a chain — add/remove/reorder rules without changing processing logic.'},
+    public function build(): Payment
+    {
+        if ($this->amount === null) {
+            throw new \\DomainException('Amount is required');
+        }
+        return new Payment($this->amount, $this->method, ...);
+    }
+}`,
+    note: '<strong>Payments tip:</strong> Use a builder for constructing complex Checkout or Invoice objects — optional fields like discounts, metadata, and tax details fit naturally without polluting the constructor.',
+  },
 
-  {cat:'Behavioral',name:'Command',intent:'Encapsulate a request as an object, allowing parameterization and queuing.',
-   when:['You want to parameterize actions','You need to queue, log, or support undo of operations'],
-   before:`<?php\n// Direct calls, no history, no undo\n$account->debit($amount);\n$account->credit($amount);`,
-   after:`<?php\ninterface Command {\n  public function execute(): void;\n  public function undo(): void;\n}\nclass DebitCommand implements Command {\n  public function __construct(\n    private Account $account,\n    private Money $amount\n  ) {}\n  public function execute(): void {\n    $this->account->debit($this->amount);\n  }\n  public function undo(): void {\n    $this->account->credit($this->amount);\n  }\n}\n$bus->dispatch(new DebitCommand($account, $amount));`,
-   note:'Model payment operations as commands — enables undo, audit log, and async dispatch via a message bus.'},
+  /* ── Structural ─────────────────────────────────────── */
+  {
+    cat: 'Structural', name: 'Adapter',
+    intent: 'Convert the interface of a class into another interface that clients expect.',
+    when: [
+      'You want to use an existing class but its interface does not match what you need',
+      'You\'re integrating a third-party library and want to protect your domain from it',
+      'You need to make classes work together that otherwise couldn\'t due to incompatible interfaces',
+    ],
+    before: `<?php
+// Domain code is tightly coupled to Stripe's types
+use Stripe\\Charge;
 
-  {cat:'Behavioral',name:'Interpreter',intent:'Define a grammar and an interpreter for a language.',
-   when:['You need to interpret sentences in a simple language','Efficiency is not a critical concern'],
-   before:`<?php\n// Hard-coded rule evaluation\nif ($order->total > 100 && $user->isPremium()) {\n  $discount = 0.1;\n}`,
-   after:`<?php\n// DSL: "order.total > 100 AND user.tier = premium"\ninterface Expression {\n  public function interpret(Context $ctx): bool;\n}\nclass AndExpression implements Expression {\n  public function interpret(Context $ctx): bool {\n    return $this->left->interpret($ctx)\n        && $this->right->interpret($ctx);\n  }\n}\n// Parse rule strings into expression trees`,
-   note:'Build a discount rule engine where business teams define rules like "amount > 500 AND currency = USD" without code deploys.'},
+class PaymentService
+{
+    public function process(Charge $charge): void
+    {
+        // Directly using Stripe's object — what if we switch PSPs?
+        if ($charge->status === 'succeeded') {
+            // ...
+        }
+        echo $charge->id;
+    }
+}`,
+    after: `<?php
+// Define your own interface
+interface GatewayResponse
+{
+    public function isSuccess(): bool;
+    public function getTransactionId(): string;
+    public function getErrorMessage(): ?string;
+}
 
-  {cat:'Behavioral',name:'Iterator',intent:'Provide a way to access elements of a collection sequentially without exposing its internals.',
-   when:['You want a standard way to traverse different collection types','You want to support multiple traversal styles'],
-   before:`<?php\n// Exposing internals\n$items = $invoice->getLineItemsArray();\nfor ($i=0; $i < count($items); $i++) {\n  echo $items[$i]->price();\n}`,
-   after:`<?php\nclass Invoice implements IteratorAggregate {\n  public function getIterator(): ArrayIterator {\n    return new ArrayIterator($this->lineItems);\n  }\n}\n// Clean traversal\nforeach ($invoice as $item) {\n  echo $item->price();\n}\n// Or filter:\n$expensive = array_filter(\n  iterator_to_array($invoice),\n  fn($i) => $i->price()->greaterThan(Money::of(100,'USD'))\n);`,
-   note:'Make Invoice and PaymentBatch iterable — loop over line items or transactions with a clean foreach.'},
+// Adapter wraps Stripe's object
+class StripeChargeAdapter implements GatewayResponse
+{
+    public function __construct(
+        private readonly \\Stripe\\Charge $charge
+    ) {}
 
-  {cat:'Behavioral',name:'Mediator',intent:'Define an object that encapsulates how objects interact, reducing direct dependencies.',
-   when:['Many objects communicate in complex ways','Reusing objects is difficult because they reference many other objects'],
-   before:`<?php\n// Components directly reference each other\n$payment->notifyFraud($fraudService);\n$fraudService->alertCompliance($compliance);\n$compliance->updateLedger($ledger);`,
-   after:`<?php\nclass PaymentMediator {\n  public function notify(object $sender, string $event): void {\n    if ($event === 'fraud_detected') {\n      $this->compliance->alert($sender);\n      $this->ledger->freeze($sender->accountId());\n      $this->notifier->send('fraud_alert');\n    }\n  }\n}\n// Components only know the mediator\n$mediator->notify($payment, 'fraud_detected');`,
-   note:'Coordinate fraud detection, compliance alerts, and ledger updates through a central mediator — components stay decoupled.'},
+    public function isSuccess(): bool
+    {
+        return $this->charge->status === 'succeeded';
+    }
 
-  {cat:'Behavioral',name:'Memento',intent:'Capture and externalize an object\'s internal state so it can be restored later.',
-   when:['You need to implement undo/redo','Exposing object internals to save state would violate encapsulation'],
-   before:`<?php\n// No way to roll back without exposing state\n$payment->setStatus('captured');\n// Oops — gateway returned error\n// Can't revert without knowing old state`,
-   after:`<?php\nclass Payment {\n  public function save(): Memento {\n    return new Memento($this->status, $this->amount);\n  }\n  public function restore(Memento $m): void {\n    $this->status = $m->status;\n    $this->amount = $m->amount;\n  }\n}\n// Usage:\n$snapshot = $payment->save();\ntry {\n  $payment->capture();\n} catch (GatewayException $e) {\n  $payment->restore($snapshot);\n}`,
-   note:'Snapshot payment state before calling the PSP — restore it if the gateway call fails, keeping the aggregate consistent.'},
+    public function getTransactionId(): string
+    {
+        return $this->charge->id;
+    }
 
-  {cat:'Behavioral',name:'Observer',intent:'Define a one-to-many dependency so that when one object changes state, all dependents are notified.',
-   when:['A change to one object requires changing others and you do not know how many'],
-   before:`<?php\n// Payment directly calls all consumers\n$payment->capture();\n$notifier->sendReceipt($payment);\n$analytics->track($payment);\n$ledger->record($payment);\n// Payment is coupled to every consumer`,
-   after:`<?php\nclass Payment extends EventEmitter {\n  public function capture(): void {\n    $this->status = PaymentStatus::captured();\n    $this->emit(new PaymentCaptured($this->id));\n  }\n}\n// Subscribers register independently:\n$bus->subscribe(PaymentCaptured::class, [\n  $receiptMailer,\n  $analyticsTracker,\n  $ledgerRecorder,\n]);`,
-   note:'This is exactly how DDD Domain Events work — Payment emits PaymentCaptured, downstream contexts subscribe independently.'},
+    public function getErrorMessage(): ?string
+    {
+        return $this->charge->failure_message;
+    }
+}
 
-  {cat:'Behavioral',name:'State',intent:'Allow an object to alter its behavior when its internal state changes.',
-   when:['An object\'s behavior depends on its state and must change at runtime','Operations have large conditional statements that depend on the object\'s state'],
-   before:`<?php\nclass Payment {\n  public function process(): void {\n    if ($this->status === 'pending') { /* ... */ }\n    elseif ($this->status === 'authorized') { /* ... */ }\n    elseif ($this->status === 'captured') {\n      throw new Exception('Already captured');\n    }\n  }\n}`,
-   after:`<?php\ninterface PaymentState {\n  public function capture(Payment $p): void;\n  public function refund(Payment $p): void;\n}\nclass AuthorizedState implements PaymentState {\n  public function capture(Payment $p): void {\n    $p->setState(new CapturedState());\n  }\n  public function refund(Payment $p): void {\n    throw new DomainException("Can't refund before capture");\n  }\n}\n$payment->setState(new AuthorizedState());`,
-   note:'Model the Payment lifecycle (Pending→Authorized→Captured→Refunded) as state objects — each state enforces its own valid transitions.'},
+// Domain code never sees Stripe types:
+$response = new StripeChargeAdapter($stripeCharge);
+if ($response->isSuccess()) { ... }`,
+    note: '<strong>Payments tip:</strong> Wrap every PSP response (Stripe, PayPal, Braintree) in your own GatewayResponse adapter. Switching PSPs only requires a new adapter — your domain is untouched.',
+  },
 
-  {cat:'Behavioral',name:'Strategy',intent:'Define a family of algorithms, encapsulate each one, and make them interchangeable.',
-   when:['You want to define a class that will have one behavior that\'s similar to other behaviors in a list','You need to swap algorithms at runtime'],
-   before:`<?php\n// Hard-coded strategy\nif ($method === 'card') {\n  $fee = $amount * 0.029 + 0.30;\n} elseif ($method === 'ach') {\n  $fee = $amount * 0.008;\n} elseif ($method === 'crypto') {\n  $fee = 0;\n}`,
-   after:`<?php\ninterface FeeStrategy {\n  public function calculate(Money $amount): Money;\n}\nclass CardFeeStrategy implements FeeStrategy {\n  public function calculate(Money $amount): Money {\n    return $amount->multiply(0.029)->add(Money::of(30, 'USD'));\n  }\n}\nclass AchFeeStrategy implements FeeStrategy {\n  public function calculate(Money $amount): Money {\n    return $amount->multiply(0.008);\n  }\n}\n// Inject at runtime:\n$calculator = new FeeCalculator($strategy);`,
-   note:'Swap fee calculation strategies (card, ACH, crypto, international) at runtime based on the selected payment method.'},
+  {
+    cat: 'Structural', name: 'Decorator',
+    intent: 'Attach additional responsibilities to an object dynamically without subclassing.',
+    when: [
+      'You need to add behavior to objects without affecting other instances of the same class',
+      'Extension by subclassing would lead to an explosion of subclasses',
+      'You want to combine behaviors in different ways at runtime',
+    ],
+    before: `<?php
+// Subclass explosion: every combination needs its own class
+class StripeGateway {}
+class LoggedStripeGateway extends StripeGateway {}
+class RetryableStripeGateway extends StripeGateway {}
+class LoggedRetryableStripeGateway extends StripeGateway {}
+// ...and the same for every other PSP`,
+    after: `<?php
+interface PaymentGateway
+{
+    public function charge(Money $amount): GatewayResponse;
+}
 
-  {cat:'Behavioral',name:'Template Method',intent:'Define the skeleton of an algorithm, deferring some steps to subclasses.',
-   when:['You want to let subclasses implement specific steps without changing the algorithm\'s structure'],
-   before:`<?php\n// Duplicated flow across all processors\nclass StripeProcessor {\n  public function process(): void {\n    $this->validateStripe();\n    $this->chargeStripe();\n    $this->logStripe();\n  }\n}\nclass PayPalProcessor {\n  public function process(): void {\n    $this->validatePayPal();\n    $this->chargePayPal();\n    $this->logPayPal();\n  }\n}`,
-   after:`<?php\nabstract class PaymentProcessor {\n  // Template method — fixed order\n  final public function process(Payment $p): void {\n    $this->validate($p);\n    $response = $this->charge($p);\n    $this->handleResponse($response);\n    $this->log($p, $response);\n  }\n  abstract protected function validate(Payment $p): void;\n  abstract protected function charge(Payment $p): Response;\n  protected function log(Payment $p, Response $r): void {\n    // Default logging — subclasses can override\n  }\n}`,
-   note:'Define the payment processing flow once (validate→charge→handle→log) — each PSP subclass fills in PSP-specific steps.'},
+class LoggingDecorator implements PaymentGateway
+{
+    public function __construct(
+        private readonly PaymentGateway $inner
+    ) {}
 
-  {cat:'Behavioral',name:'Visitor',intent:'Separate an algorithm from the object structure it operates on.',
-   when:['You need to perform many distinct operations on an object structure','The object structure rarely changes but you often need to add new operations'],
-   before:`<?php\n// Operations scattered across classes\nclass LineItem {\n  public function toXml(): string { /* ... */ }\n  public function toPdf(): string { /* ... */ }\n  public function toJson(): string { /* ... */ }\n  // Every new export format = change this class\n}`,
-   after:`<?php\ninterface InvoiceVisitor {\n  public function visitLineItem(LineItem $i): void;\n  public function visitDiscount(Discount $d): void;\n}\nclass XmlExportVisitor implements InvoiceVisitor {\n  public function visitLineItem(LineItem $i): void {\n    $this->xml .= "<item>{$i->name()}</item>";\n  }\n}\nclass PdfExportVisitor implements InvoiceVisitor {\n  public function visitLineItem(LineItem $i): void {\n    $this->pdf->addRow($i->name(), $i->price());\n  }\n}`,
-   note:'Add new invoice export formats (XML, PDF, EDI) by writing a new Visitor — the Invoice structure never changes.'},
+    public function charge(Money $amount): GatewayResponse
+    {
+        $this->logger->info('Charging', ['amount' => $amount]);
+        $response = $this->inner->charge($amount);
+        $this->logger->info('Response', ['success' => $response->isSuccess()]);
+        return $response;
+    }
+}
+
+class RetryDecorator implements PaymentGateway
+{
+    public function charge(Money $amount): GatewayResponse
+    {
+        for ($i = 0; $i < 3; $i++) {
+            $r = $this->inner->charge($amount);
+            if ($r->isSuccess()) return $r;
+        }
+        throw new GatewayException('All retries failed');
+    }
+}
+
+// Compose behaviors at boot time:
+$gateway = new LoggingDecorator(
+    new RetryDecorator(
+        new StripeGateway()
+    )
+);`,
+    note: '<strong>Payments tip:</strong> Add logging, retry logic, and circuit-breaking to any gateway by wrapping it — no inheritance needed, swap decorators per environment.',
+  },
+
+  {
+    cat: 'Structural', name: 'Facade',
+    intent: 'Provide a simplified interface to a complex subsystem.',
+    when: [
+      'You want to provide a simple interface to a complex body of code',
+      'Many clients depend on implementation details of a subsystem',
+      'You want to layer your subsystem and define entry points for each layer',
+    ],
+    before: `<?php
+// API controller knows too much — tightly coupled to 5 services
+class CheckoutController
+{
+    public function checkout(Request $request): Response
+    {
+        $customer = $this->customerRepo->find($request->customerId);
+        $method   = $this->methodService->getDefault($customer);
+        $invoice  = $this->invoiceFactory->create($customer, $request->items);
+        $tx       = $this->gateway->charge($method, $invoice->total());
+        $this->notifier->sendReceipt($customer, $tx);
+        $this->ledger->record($tx);
+
+        return new Response($tx);
+    }
+}`,
+    after: `<?php
+// Facade hides all orchestration
+class CheckoutFacade
+{
+    public function checkout(
+        CustomerId $customerId,
+        array $items
+    ): CheckoutResult {
+        $customer = $this->customerRepo->find($customerId);
+        $method   = $this->methodService->getDefault($customer);
+        $invoice  = $this->invoiceFactory->create($customer, $items);
+        $tx       = $this->gateway->charge($method, $invoice->total());
+        $this->notifier->sendReceipt($customer, $tx);
+        $this->ledger->record($tx);
+
+        return new CheckoutResult($tx, $invoice);
+    }
+}
+
+// Controller is now clean:
+class CheckoutController
+{
+    public function checkout(Request $request): Response
+    {
+        $result = $this->checkout->checkout(
+            CustomerId::from($request->customerId),
+            $request->items
+        );
+        return new Response($result);
+    }
+}`,
+    note: '<strong>Payments tip:</strong> Expose a CheckoutFacade to your API layer — it orchestrates customer lookup, payment, invoice creation, and notifications. Controllers stay thin.',
+  },
+
+  /* ── Behavioral ─────────────────────────────────────── */
+  {
+    cat: 'Behavioral', name: 'Strategy',
+    intent: 'Define a family of algorithms, encapsulate each one, and make them interchangeable at runtime.',
+    when: [
+      'You need to switch between different implementations of the same behavior',
+      'You have a class with a large conditional that selects different algorithms',
+      'You want to isolate algorithm logic from the code that uses it',
+    ],
+    before: `<?php
+// Growing if/else — adding a new method means editing this class
+public function calculateFee(string $method, Money $amount): Money
+{
+    if ($method === 'card') {
+        return $amount->multiply(0.029)->add(Money::of(30, 'USD'));
+    } elseif ($method === 'ach') {
+        return $amount->multiply(0.008);
+    } elseif ($method === 'crypto') {
+        return Money::zero('USD');
+    } elseif ($method === 'bnpl') {
+        // ... more logic
+    }
+}`,
+    after: `<?php
+interface FeeStrategy
+{
+    public function calculate(Money $amount): Money;
+}
+
+class CardFeeStrategy implements FeeStrategy
+{
+    public function calculate(Money $amount): Money
+    {
+        // 2.9% + $0.30
+        return $amount->multiply(0.029)
+                      ->add(Money::of(30, 'USD'));
+    }
+}
+
+class AchFeeStrategy implements FeeStrategy
+{
+    public function calculate(Money $amount): Money
+    {
+        return $amount->multiply(0.008); // 0.8%
+    }
+}
+
+class FeeCalculator
+{
+    public function __construct(
+        private readonly FeeStrategy $strategy
+    ) {}
+
+    public function calculate(Money $amount): Money
+    {
+        return $this->strategy->calculate($amount);
+    }
+}
+
+// Inject the right strategy at runtime:
+$calculator = new FeeCalculator(new CardFeeStrategy());
+$fee = $calculator->calculate(Money::of(10000, 'USD'));`,
+    note: '<strong>Payments tip:</strong> New payment method = new strategy class, zero changes to FeeCalculator. Works great for discount strategies, refund policies, and fraud scoring too.',
+  },
+
+  {
+    cat: 'Behavioral', name: 'Observer',
+    intent: 'Define a one-to-many dependency so that when one object changes state, all dependents are notified automatically.',
+    when: [
+      'A change in one object requires notifying an unknown number of other objects',
+      'You want loose coupling between the subject and its observers',
+      'This is the foundation of Domain Events in DDD',
+    ],
+    before: `<?php
+// Payment directly calls every consumer — tightly coupled
+class Payment
+{
+    public function capture(): void
+    {
+        $this->status = 'captured';
+
+        // Must know about every downstream system:
+        $this->mailer->sendReceipt($this);
+        $this->analytics->trackCapture($this);
+        $this->ledger->record($this);
+        $this->inventory->release($this->orderId);
+    }
+}`,
+    after: `<?php
+// Payment raises an event — knows nothing about consumers
+class Payment
+{
+    private array $events = [];
+
+    public function capture(): void
+    {
+        $this->status = PaymentStatus::captured();
+        $this->events[] = new PaymentCaptured(
+            $this->id->toString(),
+            $this->amount->amountInCents(),
+            (string) $this->amount->currency()
+        );
+    }
+
+    public function pullEvents(): array
+    {
+        $e = $this->events;
+        $this->events = [];
+        return $e;
+    }
+}
+
+// Application layer publishes events after saving:
+$payment->capture();
+$this->repo->save($payment);
+foreach ($payment->pullEvents() as $event) {
+    $this->bus->publish($event);
+}
+
+// Subscribers register independently:
+$bus->subscribe(PaymentCaptured::class, $receiptMailer);
+$bus->subscribe(PaymentCaptured::class, $analyticsTracker);
+$bus->subscribe(PaymentCaptured::class, $ledgerRecorder);`,
+    note: '<strong>Payments tip:</strong> This is exactly how DDD Domain Events work. Payment raises PaymentCaptured — Notifications, Analytics, and Ledger subscribe independently. Adding a new consumer requires zero changes to Payment.',
+  },
+
+  {
+    cat: 'Behavioral', name: 'Command',
+    intent: 'Encapsulate a request as an object, enabling queuing, logging, and undoable operations.',
+    when: [
+      'You want to parameterize actions and pass them around',
+      'You need queuing, scheduling, or delayed execution of operations',
+      'You need to support undo/redo or an audit log',
+    ],
+    before: `<?php
+// Direct calls — no audit trail, no undo, no async option
+class PaymentController
+{
+    public function refund(string $paymentId, int $amount): void
+    {
+        $payment = $this->repo->find($paymentId);
+        $payment->refund(Money::of($amount, 'USD'));
+        $this->repo->save($payment);
+        $this->mailer->sendRefundConfirmation($payment);
+    }
+}`,
+    after: `<?php
+// The command object
+final class RefundPaymentCommand
+{
+    public function __construct(
+        public readonly string $paymentId,
+        public readonly int    $amountInCents,
+        public readonly string $currency,
+        public readonly string $reason,
+    ) {}
+}
+
+// The handler
+class RefundPaymentHandler
+{
+    public function handle(RefundPaymentCommand $cmd): void
+    {
+        $payment = $this->repo->find($cmd->paymentId);
+        $payment->refund(
+            Money::of($cmd->amountInCents, $cmd->currency),
+            $cmd->reason
+        );
+        $this->repo->save($payment);
+    }
+}
+
+// Controller is now just a dispatcher:
+$this->bus->dispatch(new RefundPaymentCommand(
+    paymentId: $request->paymentId,
+    amountInCents: $request->amount,
+    currency: 'USD',
+    reason: $request->reason,
+));`,
+    note: '<strong>Payments tip:</strong> Dispatch RefundPaymentCommand to a queue — it can be retried, logged, replayed, and audited. Works perfectly with Laravel\'s job system or Symfony Messenger.',
+  },
+
+  {
+    cat: 'Behavioral', name: 'State',
+    intent: 'Allow an object to alter its behavior when its internal state changes — the object appears to change its class.',
+    when: [
+      'An object\'s behavior depends on its current state and must change at runtime',
+      'You have large conditionals that check state before every operation',
+      'You want to model a clear lifecycle with enforced valid transitions',
+    ],
+    before: `<?php
+// Every method has a state check — grows unmanageably
+class Payment
+{
+    public function capture(): void
+    {
+        if ($this->status === 'pending') {
+            throw new \\DomainException('Must authorize first');
+        }
+        if ($this->status === 'captured') {
+            throw new \\DomainException('Already captured');
+        }
+        if ($this->status === 'refunded') {
+            throw new \\DomainException('Already refunded');
+        }
+        $this->status = 'captured';
+    }
+}`,
+    after: `<?php
+interface PaymentState
+{
+    public function authorize(Payment $p): void;
+    public function capture(Payment $p): void;
+    public function refund(Payment $p): void;
+}
+
+class PendingState implements PaymentState
+{
+    public function authorize(Payment $p): void
+    {
+        $p->transitionTo(new AuthorizedState());
+    }
+    public function capture(Payment $p): void
+    {
+        throw new \\DomainException('Authorize before capturing');
+    }
+    public function refund(Payment $p): void
+    {
+        throw new \\DomainException('Cannot refund a pending payment');
+    }
+}
+
+class AuthorizedState implements PaymentState
+{
+    public function authorize(Payment $p): void
+    {
+        throw new \\DomainException('Already authorized');
+    }
+    public function capture(Payment $p): void
+    {
+        $p->transitionTo(new CapturedState());
+    }
+    public function refund(Payment $p): void
+    {
+        throw new \\DomainException('Capture before refunding');
+    }
+}
+
+class Payment
+{
+    private PaymentState $state;
+
+    public function __construct()
+    {
+        $this->state = new PendingState();
+    }
+
+    public function capture(): void { $this->state->capture($this); }
+    public function refund(): void  { $this->state->refund($this); }
+
+    public function transitionTo(PaymentState $state): void
+    {
+        $this->state = $state;
+    }
+}`,
+    note: '<strong>Payments tip:</strong> Model the payment lifecycle (Pending → Authorized → Captured → Refunded/Failed) as state objects. Each state enforces its own valid transitions — impossible states become compile-time errors.',
+  },
 ];
 
-const STORAGE_KEY = 'concept_atlas_patterns';
-let learned = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+const STORAGE_KEY = 'atlas_patterns_v2';
+let learned = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'));
 let activeFilter = 'all';
-let openCard = null;
+let openCardId = null;
 
-function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(learned)); }
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...learned]));
+}
 
-function filter(f) {
+function esc(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function filter(btn, f) {
   activeFilter = f;
-  ['all','Creational','Structural','Behavioral'].forEach(x => {
-    const id = x === 'all' ? 'f-all' : 'f-' + x[0].toLowerCase();
-    document.getElementById(id).className = x === f ? (f==='all'?'active-all':f==='Creational'?'active-c':f==='Structural'?'active-s':'active-b') : '';
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.remove('on');
   });
+  btn.classList.add('on');
   applyFilter();
 }
 
 function applyFilter() {
   const q = document.getElementById('search').value.toLowerCase();
-  document.querySelectorAll('.card').forEach(el => {
-    const cat = el.dataset.cat, name = el.dataset.name.toLowerCase();
-    const matchFilter = activeFilter === 'all' || cat === activeFilter;
-    const matchSearch = !q || name.includes(q) || el.dataset.intent.toLowerCase().includes(q);
-    el.classList.toggle('hidden', !matchFilter || !matchSearch);
+  document.querySelectorAll('.card').forEach(card => {
+    const matchCat = activeFilter === 'all' || card.dataset.cat === activeFilter;
+    const matchQ   = !q || card.dataset.name.toLowerCase().includes(q) ||
+                     card.dataset.intent.toLowerCase().includes(q);
+    card.classList.toggle('hidden', !matchCat || !matchQ);
   });
-  ['Creational','Structural','Behavioral'].forEach(cat => {
-    const sec = document.getElementById('sec-' + cat);
-    if (!sec) return;
-    const visible = [...sec.querySelectorAll('.card')].some(c => !c.classList.contains('hidden'));
-    sec.style.display = visible ? '' : 'none';
+  document.querySelectorAll('.section-label').forEach(sec => {
+    const cards = [...sec.nextElementSibling.querySelectorAll('.card')];
+    sec.style.display = cards.every(c => c.classList.contains('hidden')) ? 'none' : '';
+    sec.nextElementSibling.style.display = sec.style.display;
   });
 }
 
 function toggleCard(id) {
-  if (openCard && openCard !== id) {
-    document.getElementById('body-' + openCard)?.classList.remove('open');
-  }
+  const card = document.getElementById('card-' + id);
   const body = document.getElementById('body-' + id);
-  body.classList.toggle('open');
-  openCard = body.classList.contains('open') ? id : null;
+  const isOpen = body.classList.contains('open');
+
+  if (openCardId && openCardId !== id) {
+    document.getElementById('body-' + openCardId)?.classList.remove('open');
+    document.getElementById('card-' + openCardId)?.classList.remove('open');
+  }
+
+  body.classList.toggle('open', !isOpen);
+  card.classList.toggle('open', !isOpen);
+  openCardId = !isOpen ? id : null;
+}
+
+function switchTab(id, which) {
+  document.getElementById('tab-before-' + id).classList.toggle('active-before', which === 'before');
+  document.getElementById('tab-after-' + id).classList.toggle('active-after',  which === 'after');
+  document.getElementById('panel-before-' + id).classList.toggle('active', which === 'before');
+  document.getElementById('panel-after-' + id).classList.toggle('active', which === 'after');
 }
 
 function toggleLearned(id, e) {
   e.stopPropagation();
-  if (learned.includes(id)) learned = learned.filter(x => x !== id);
-  else learned.push(id);
+  if (learned.has(id)) learned.delete(id);
+  else learned.add(id);
   save();
-  document.getElementById('card-' + id).classList.toggle('learned', learned.includes(id));
+  document.getElementById('card-' + id).classList.toggle('learned', learned.has(id));
+  document.getElementById('cb-' + id).checked = learned.has(id);
   updateProgress();
 }
 
 function updateProgress() {
-  document.getElementById('progress').textContent = `${learned.length} / ${PATTERNS.length} learned`;
+  document.getElementById('progress').textContent =
+    learned.size + ' / ' + PATTERNS.length + ' learned';
+}
+
+function dotColor(cat) {
+  return cat === 'Creational' ? '#f6ad55' : cat === 'Structural' ? '#90cdf4' : '#b794f4';
 }
 
 function build() {
   const main = document.getElementById('main');
-  ['Creational','Structural','Behavioral'].forEach(cat => {
-    const sec = document.createElement('div');
-    sec.id = 'sec-' + cat;
-    const t = document.createElement('div');
-    t.className = 'section-title';
-    t.textContent = cat + ' (' + PATTERNS.filter(p=>p.cat===cat).length + ')';
-    sec.appendChild(t);
-    const grid = document.createElement('div');
-    grid.className = 'grid';
-    PATTERNS.filter(p => p.cat === cat).forEach((p, i) => {
-      const id = cat[0] + i;
-      const dotColor = cat==='Creational'?'#f6ad55':cat==='Structural'?'#90cdf4':'#b794f4';
-      const isLearned = learned.includes(id);
+  const categories = ['Creational', 'Structural', 'Behavioral'];
+
+  categories.forEach(cat => {
+    const patterns = PATTERNS.filter(p => p.cat === cat);
+
+    const label = document.createElement('div');
+    label.className = 'section-label';
+    label.textContent = cat + ' (' + patterns.length + ')';
+    main.appendChild(label);
+
+    const group = document.createElement('div');
+    group.dataset.group = cat;
+    main.appendChild(group);
+
+    patterns.forEach((p, i) => {
+      const id = cat.slice(0, 1).toLowerCase() + i;
+      const isLearned = learned.has(id);
+
       const card = document.createElement('div');
       card.className = 'card' + (isLearned ? ' learned' : '');
       card.id = 'card-' + id;
       card.dataset.cat = cat;
       card.dataset.name = p.name;
       card.dataset.intent = p.intent;
+
       card.innerHTML = `
         <div class="card-head" onclick="toggleCard('${id}')">
-          <div class="dot" style="background:${dotColor}"></div>
-          <div>
-            <div class="name">${p.name}</div>
-            <div class="intent">${p.intent}</div>
+          <div class="cat-dot" style="background:${dotColor(cat)}"></div>
+          <div class="head-text">
+            <div class="pattern-name">${p.name}</div>
+            <div class="pattern-intent">${p.intent}</div>
           </div>
-          <label class="learned-cb" onclick="toggleLearned('${id}',event)">
-            <input type="checkbox" ${isLearned?'checked':''}> Learned
-          </label>
+          <div class="head-right">
+            <label class="learned-toggle" onclick="toggleLearned('${id}',event)">
+              <input type="checkbox" id="cb-${id}" ${isLearned ? 'checked' : ''}> Learned
+            </label>
+            <span class="chevron">▾</span>
+          </div>
         </div>
         <div class="card-body" id="body-${id}">
-          <h4>When to use</h4>
-          <ul>${p.when.map(w=>`<li>${w}</li>`).join('')}</ul>
-          <h4>Before / After (PHP)</h4>
-          <div class="code-wrap">
-            <div class="before"><div class="code-label">Before</div><pre>${esc(p.before)}</pre></div>
-            <div class="after"><div class="code-label">After</div><pre>${esc(p.after)}</pre></div>
+          <div class="section-head">When to use</div>
+          <ul class="when-list">
+            ${p.when.map(w => `<li>${w}</li>`).join('')}
+          </ul>
+          <div class="section-head" style="margin-bottom:8px">Code Example (PHP)</div>
+          <div class="code-tabs">
+            <div class="tab-btns">
+              <button class="tab-btn active-before" id="tab-before-${id}" onclick="switchTab('${id}','before')">Before</button>
+              <button class="tab-btn" id="tab-after-${id}" onclick="switchTab('${id}','after')">After</button>
+            </div>
+            <div class="code-panel before-panel active" id="panel-before-${id}">
+              <pre>${esc(p.before)}</pre>
+            </div>
+            <div class="code-panel after-panel" id="panel-after-${id}">
+              <pre>${esc(p.after)}</pre>
+            </div>
           </div>
-          <div class="payments-note">💳 Payments: ${p.note}</div>
+          <div class="payments-note">💳 ${p.note}</div>
         </div>
       `;
-      grid.appendChild(card);
+      group.appendChild(card);
     });
-    sec.appendChild(grid);
-    main.appendChild(sec);
   });
+
   updateProgress();
 }
-
-function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 build();
 </script>
