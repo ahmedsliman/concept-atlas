@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ubiquitous Language Builder</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#0f1117;color:#e2e8f0;min-height:100vh}
+header{padding:12px 20px;border-bottom:1px solid #1e2533;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{font-size:15px;font-weight:700}
+.toolbar{display:flex;gap:8px;margin-left:auto;align-items:center;flex-wrap:wrap}
+button{padding:6px 12px;border-radius:6px;border:1px solid #2d3748;background:#141824;color:#e2e8f0;font-size:12px;cursor:pointer}
+button:hover{border-color:#4a7fb5}
+button.primary{background:#1e3a5f;border-color:#4a7fb5;color:#90cdf4}
+button.active{background:#1a2e1a;border-color:#48bb78;color:#68d391}
+input[type=text]{padding:6px 10px;background:#141824;border:1px solid #2d3748;border-radius:6px;color:#e2e8f0;font-size:12px;outline:none}
+input[type=text]:focus{border-color:#4a7fb5}
+main{max-width:1100px;margin:0 auto;padding:20px}
+.tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.tab{padding:6px 14px;border-radius:6px;border:1px solid #2d3748;background:#141824;color:#718096;font-size:12px;cursor:pointer}
+.tab.active{border-color:#4a7fb5;color:#90cdf4;background:#1e3a5f}
+.tab.del{color:#fc8181;border-color:#c05252;background:#2a1010;padding:4px 8px;font-size:11px}
+.ctx-section{display:none}
+.ctx-section.active{display:block}
+.add-form{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.add-form input{flex:1;min-width:100px}
+.terms-grid{display:grid;gap:8px}
+.term-card{background:#141824;border:1px solid #1e2533;border-radius:8px;padding:12px 14px;position:relative}
+.term-card.conflict{border-color:#c05252;background:#1e0f0f}
+.term-card.shared{border-color:#48bb78;background:#0f1e14}
+.term-name{font-size:13px;font-weight:600;color:#e2e8f0;margin-bottom:4px}
+.term-def{font-size:12px;color:#a0aec0;margin-bottom:4px}
+.term-ex{font-size:11px;color:#4a5568;font-style:italic}
+.badge{display:inline-block;font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;text-transform:uppercase;margin-bottom:6px}
+.badge-conflict{background:#3a1010;color:#fc8181;border:1px solid #c05252}
+.badge-shared{background:#0f2a1a;color:#68d391;border:1px solid #2a6a3a}
+.term-actions{position:absolute;top:10px;right:10px;display:flex;gap:4px}
+.term-actions button{padding:2px 7px;font-size:10px}
+.empty{color:#4a5568;font-size:13px;padding:20px 0;text-align:center}
+/* conflicts view */
+#conflicts-view{display:none}
+.conflict-table{width:100%;border-collapse:collapse;font-size:12px}
+.conflict-table th{text-align:left;padding:8px 10px;border-bottom:1px solid #1e2533;color:#718096;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.conflict-table td{padding:8px 10px;border-bottom:1px solid #1e2533;vertical-align:top}
+.conflict-table tr:last-child td{border:none}
+/* info panel */
+.info-banner{background:#141824;border:1px solid #1e2533;border-radius:8px;padding:12px 14px;margin-bottom:20px;font-size:12px;color:#718096;line-height:1.6;cursor:pointer}
+.info-banner summary{color:#90cdf4;font-weight:600;font-size:13px;margin-bottom:6px;list-style:none}
+.info-banner summary::before{content:'▶ ';font-size:9px}
+details[open] summary::before{content:'▼ '}
+</style>
+</head>
+<body>
+<header>
+  <h1>Ubiquitous Language Builder</h1>
+  <div class="toolbar">
+    <input type="text" id="search" placeholder="Search terms…" oninput="renderAll()">
+    <button id="conflicts-btn" onclick="toggleConflictsView()">Show Conflicts</button>
+    <button class="primary" onclick="addContextPrompt()">+ Add Context</button>
+  </div>
+</header>
+<main>
+  <details class="info-banner">
+    <summary>What is Ubiquitous Language?</summary>
+    <p>In DDD, every Bounded Context has its own language — the same word can mean different things in different contexts. <strong style="color:#fc8181">Conflicts</strong> (red) reveal model friction and potential integration problems. <strong style="color:#68d391">Shared</strong> (green) terms are candidates for a Shared Kernel.</p>
+  </details>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div id="conflicts-view">
+    <h2 style="font-size:13px;color:#fc8181;margin-bottom:12px">Conflicting Terms Across Contexts</h2>
+    <table class="conflict-table" id="conflict-table"></table>
+  </div>
+
+  <div id="ctx-sections"></div>
+</main>
+
+<script>
+const STORAGE_KEY = 'concept_atlas_ub';
+let state = load();
+
+function load() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || defaultState(); }
+  catch { return defaultState(); }
+}
+
+function defaultState() {
+  return {
+    activeCtx: 0,
+    contexts: [
+      { name: 'Billing', terms: [
+        {name:'Payment',def:'A financial transaction for goods/services, with amount, currency, and status.',ex:'Payment #1234 of $99 USD captured.'},
+        {name:'Customer',def:'A payer identified by ID. Billing does not store personal details — only a reference.',ex:'CustomerId: cust_abc123'},
+      ]},
+      { name: 'Identity', terms: [
+        {name:'Customer',def:'A registered user with full profile: name, email, address, preferences.',ex:'Customer John Doe, john@example.com'},
+        {name:'Account',def:'Authentication entity with credentials. One Customer may have multiple Accounts.',ex:'Account with OAuth Google login'},
+      ]},
+    ]
+  };
+}
+
+function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+let showConflictsView = false;
+
+function getConflicts() {
+  const map = {};
+  for (const ctx of state.contexts) {
+    for (const t of ctx.terms) {
+      if (!map[t.name]) map[t.name] = [];
+      map[t.name].push({ctxName: ctx.name, def: t.def});
+    }
+  }
+  return Object.entries(map).filter(([,entries]) => {
+    if (entries.length < 2) return false;
+    const defs = new Set(entries.map(e => e.def.trim().toLowerCase()));
+    return defs.size > 1;
+  });
+}
+
+function getSharedNames() {
+  const map = {};
+  for (const ctx of state.contexts) {
+    for (const t of ctx.terms) {
+      if (!map[t.name]) map[t.name] = [];
+      map[t.name].push(t.def.trim().toLowerCase());
+    }
+  }
+  return new Set(Object.entries(map).filter(([,defs]) => defs.length > 1 && new Set(defs).size === 1).map(([k]) => k));
+}
+
+function getConflictNames() {
+  return new Set(getConflicts().map(([k]) => k));
+}
+
+function renderAll() {
+  renderTabs();
+  renderSections();
+  if (showConflictsView) renderConflictsTable();
+}
+
+function renderTabs() {
+  const tabs = document.getElementById('tabs');
+  const q = document.getElementById('search').value.trim().toLowerCase();
+  tabs.innerHTML = '';
+  state.contexts.forEach((ctx, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'tab' + (i === state.activeCtx ? ' active' : '');
+    btn.textContent = ctx.name;
+    btn.onclick = () => { state.activeCtx = i; showConflictsView = false; document.getElementById('conflicts-view').style.display='none'; document.getElementById('ctx-sections').style.display=''; renderAll(); };
+    tabs.appendChild(btn);
+    // del button per tab
+    const del = document.createElement('button');
+    del.className = 'tab del';
+    del.textContent = '×';
+    del.title = 'Remove context';
+    del.onclick = (e) => { e.stopPropagation(); removeCtx(i); };
+    tabs.appendChild(del);
+  });
+}
+
+function renderSections() {
+  const wrap = document.getElementById('ctx-sections');
+  const q = document.getElementById('search').value.trim().toLowerCase();
+  const conflictNames = getConflictNames();
+  const sharedNames = getSharedNames();
+  wrap.innerHTML = '';
+  state.contexts.forEach((ctx, ci) => {
+    const sec = document.createElement('div');
+    sec.className = 'ctx-section' + (ci === state.activeCtx && !showConflictsView ? ' active' : '');
+    // Add form
+    const form = document.createElement('div');
+    form.className = 'add-form';
+    form.innerHTML = `
+      <input type="text" placeholder="Term" id="term-name-${ci}" />
+      <input type="text" placeholder="Definition" id="term-def-${ci}" style="flex:2" />
+      <input type="text" placeholder="Example (optional)" id="term-ex-${ci}" style="flex:1.5" />
+      <button class="primary" onclick="addTerm(${ci})">Add</button>
+    `;
+    sec.appendChild(form);
+    const grid = document.createElement('div');
+    grid.className = 'terms-grid';
+    const filtered = ctx.terms.filter(t => !q || t.name.toLowerCase().includes(q) || t.def.toLowerCase().includes(q));
+    if (!filtered.length) { grid.innerHTML = '<p class="empty">No terms yet — add one above.</p>'; }
+    filtered.forEach((t, ti) => {
+      const isConflict = conflictNames.has(t.name);
+      const isShared = sharedNames.has(t.name);
+      const card = document.createElement('div');
+      card.className = 'term-card' + (isConflict ? ' conflict' : isShared ? ' shared' : '');
+      card.innerHTML = `
+        ${isConflict ? '<span class="badge badge-conflict">⚠ Conflict</span>' : ''}
+        ${isShared ? '<span class="badge badge-shared">✓ Shared</span>' : ''}
+        <div class="term-name">${t.name}</div>
+        <div class="term-def">${t.def}</div>
+        ${t.ex ? `<div class="term-ex">${t.ex}</div>` : ''}
+        <div class="term-actions">
+          <button onclick="editTerm(${ci},${ti})">Edit</button>
+          <button style="color:#fc8181;border-color:#c05252" onclick="deleteTerm(${ci},${ti})">×</button>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+    sec.appendChild(grid);
+    wrap.appendChild(sec);
+  });
+}
+
+function renderConflictsTable() {
+  const conflicts = getConflicts();
+  const table = document.getElementById('conflict-table');
+  if (!conflicts.length) { table.innerHTML = '<tr><td style="color:#68d391;padding:20px">No conflicts found — all shared terms have consistent definitions.</td></tr>'; return; }
+  table.innerHTML = `<tr><th>Term</th><th>Context</th><th>Definition</th></tr>` +
+    conflicts.flatMap(([name, entries]) =>
+      entries.map((e, i) => `<tr style="${i===0?'border-top:2px solid #3a1010':''}"><td style="color:#fc8181;font-weight:600">${i===0?name:''}</td><td style="color:#a0aec0">${e.ctxName}</td><td>${e.def}</td></tr>`)
+    ).join('');
+}
+
+function addTerm(ci) {
+  const name = document.getElementById(`term-name-${ci}`).value.trim();
+  const def = document.getElementById(`term-def-${ci}`).value.trim();
+  const ex = document.getElementById(`term-ex-${ci}`).value.trim();
+  if (!name || !def) return;
+  state.contexts[ci].terms.push({name, def, ex});
+  save(); renderAll();
+  document.getElementById(`term-name-${ci}`).value = '';
+  document.getElementById(`term-def-${ci}`).value = '';
+  document.getElementById(`term-ex-${ci}`).value = '';
+}
+
+function deleteTerm(ci, ti) {
+  state.contexts[ci].terms.splice(ti, 1);
+  save(); renderAll();
+}
+
+function editTerm(ci, ti) {
+  const t = state.contexts[ci].terms[ti];
+  const name = prompt('Term name:', t.name); if (name === null) return;
+  const def = prompt('Definition:', t.def); if (def === null) return;
+  const ex = prompt('Example:', t.ex);
+  state.contexts[ci].terms[ti] = {name: name.trim(), def: def.trim(), ex: (ex||'').trim()};
+  save(); renderAll();
+}
+
+function addContextPrompt() {
+  const name = prompt('Context name (e.g. Notifications):');
+  if (!name || !name.trim()) return;
+  state.contexts.push({name: name.trim(), terms: []});
+  state.activeCtx = state.contexts.length - 1;
+  save(); renderAll();
+}
+
+function removeCtx(i) {
+  if (state.contexts.length <= 1) { alert('Need at least one context.'); return; }
+  if (!confirm(`Remove "${state.contexts[i].name}"?`)) return;
+  state.contexts.splice(i, 1);
+  state.activeCtx = Math.min(state.activeCtx, state.contexts.length - 1);
+  save(); renderAll();
+}
+
+function toggleConflictsView() {
+  showConflictsView = !showConflictsView;
+  document.getElementById('conflicts-view').style.display = showConflictsView ? '' : 'none';
+  document.getElementById('ctx-sections').style.display = showConflictsView ? 'none' : '';
+  document.getElementById('conflicts-btn').className = showConflictsView ? 'active' : '';
+  if (showConflictsView) renderConflictsTable();
+}
+
+renderAll();
+</script>
+</body>
+</html>

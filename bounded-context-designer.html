@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bounded Context Designer</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#0f1117;color:#e2e8f0;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+header{padding:10px 20px;border-bottom:1px solid #1e2533;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+header h1{font-size:15px;font-weight:700}
+.toolbar{display:flex;gap:8px;margin-left:auto;align-items:center;flex-wrap:wrap}
+button{padding:6px 12px;border-radius:6px;border:1px solid #2d3748;background:#141824;color:#e2e8f0;font-size:12px;cursor:pointer;white-space:nowrap}
+button:hover{border-color:#4a7fb5;color:#90cdf4}
+button.primary{background:#1e3a5f;border-color:#4a7fb5;color:#90cdf4}
+button.active{background:#3a1e5f;border-color:#805ad5;color:#d6bcfa}
+button.danger{background:#2a1010;border-color:#c05252;color:#fc8181}
+main{flex:1;display:flex;overflow:hidden}
+#canvas-wrap{flex:1;position:relative;overflow:hidden;background:#0a0d14;background-image:radial-gradient(#1e2533 1px,transparent 1px);background-size:24px 24px}
+canvas{position:absolute;top:0;left:0;pointer-events:none}
+.ctx-box{position:absolute;min-width:140px;min-height:80px;border:2px solid #2a4a7f;border-radius:10px;background:#141e2e;padding:10px 12px;cursor:move;user-select:none}
+.ctx-box.connect-hover{border-color:#805ad5;box-shadow:0 0 0 2px #553a7f}
+.ctx-box h3{font-size:12px;font-weight:700;color:#90cdf4;margin-bottom:4px;pointer-events:none}
+.ctx-box .edit-name{display:none;background:transparent;border:none;border-bottom:1px solid #4a7fb5;color:#90cdf4;font-size:12px;font-weight:700;width:100%;outline:none}
+.ctx-box.editing h3{display:none}
+.ctx-box.editing .edit-name{display:block}
+.ctx-box .del-btn{position:absolute;top:4px;right:6px;font-size:11px;color:#4a5568;cursor:pointer;line-height:1;background:none;border:none;padding:0}
+.ctx-box .del-btn:hover{color:#fc8181}
+/* Panel */
+#panel{width:320px;border-left:1px solid #1e2533;background:#141824;display:flex;flex-direction:column;transition:transform .2s}
+#panel.hidden{display:none}
+#panel-hdr{padding:14px 16px;border-bottom:1px solid #1e2533;display:flex;justify-content:space-between;align-items:center}
+#panel-hdr h2{font-size:13px;font-weight:600}
+#panel-close{background:none;border:none;color:#718096;cursor:pointer;font-size:18px}
+#panel-body{padding:14px;overflow-y:auto;flex:1;font-size:12px;line-height:1.6;color:#a0aec0}
+#panel-body h3{font-size:12px;font-weight:600;color:#90cdf4;margin:12px 0 4px}
+#panel-body p{margin-bottom:8px}
+/* Dropdown */
+#rel-menu{position:fixed;background:#141824;border:1px solid #2d3748;border-radius:8px;padding:6px;display:none;z-index:99;min-width:200px}
+#rel-menu div{font-size:11px;color:#718096;padding:4px 8px;margin-bottom:2px}
+#rel-menu button{display:block;width:100%;text-align:left;padding:7px 10px;font-size:12px;border-radius:5px;margin-bottom:2px}
+/* Legend */
+.legend{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.li{display:flex;align-items:center;gap:4px;font-size:10px;color:#718096}
+.lline{width:20px;height:2px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Bounded Context Designer</h1>
+  <div class="legend">
+    <div class="li"><div class="lline" style="background:#68d391"></div>Shared Kernel</div>
+    <div class="li"><div class="lline" style="background:#f6ad55"></div>Customer/Supplier</div>
+    <div class="li"><div class="lline" style="background:#fc8181;border-top:2px dashed #fc8181;height:0"></div>ACL</div>
+    <div class="li"><div class="lline" style="background:#90cdf4"></div>Conformist</div>
+    <div class="li"><div class="lline" style="background:#b794f4"></div>Open Host</div>
+  </div>
+  <div class="toolbar">
+    <button class="primary" onclick="addContext()">+ Add Context</button>
+    <button id="connect-btn" onclick="toggleConnect()">Connect</button>
+    <button onclick="clearAll()" class="danger">Clear</button>
+  </div>
+</header>
+
+<main>
+  <div id="canvas-wrap">
+    <canvas id="canvas"></canvas>
+  </div>
+  <div id="panel" class="hidden">
+    <div id="panel-hdr">
+      <h2 id="panel-title">Relationship</h2>
+      <button id="panel-close" onclick="closePanel()">×</button>
+    </div>
+    <div id="panel-body"></div>
+  </div>
+</main>
+
+<div id="rel-menu">
+  <div>Choose relationship type</div>
+</div>
+
+<script>
+const RELS = {
+  'Shared Kernel': {color:'#68d391', dash:[], info:'Both contexts share a common subset of the domain model. Changes must be agreed by both teams. Use sparingly — creates tight coupling.', example:'Billing and Identity share a Money value object library.'},
+  'Customer/Supplier': {color:'#f6ad55', dash:[], info:'Upstream (Supplier) provides services. Downstream (Customer) depends on them. Upstream should accommodate downstream needs.', example:'Identity is upstream, Billing is downstream. Billing depends on Identity\'s customer data.'},
+  'Conformist': {color:'#90cdf4', dash:[], info:'Downstream conforms to the upstream model with no translation. Used when upstream has no incentive to change for you.', example:'Your payments service conforms to the bank\'s API model exactly.'},
+  'ACL': {color:'#fc8181', dash:[6,4], info:'Anti-Corruption Layer. Downstream translates the upstream model into its own language. Protects the downstream model from upstream changes.', example:'Billing uses a CustomerTranslator to convert Identity\'s Customer into Billing\'s Payer.'},
+  'Open Host Service': {color:'#b794f4', dash:[], info:'Upstream exposes a well-defined API/protocol for multiple consumers. Usually paired with a Published Language.', example:'Payments exposes a REST API with versioning for multiple internal consumers.'},
+  'Published Language': {color:'#e9d8a6', dash:[3,3], info:'A shared, documented language (schema) used for integration. Typically paired with Open Host Service.', example:'Payments publishes a JSON Schema for its event payloads that all consumers rely on.'},
+  'Separate Ways': {color:'#718096', dash:[2,4], info:'Contexts have no integration. Each team solves problems independently. Chosen when integration cost exceeds benefit.', example:'Notifications and Analytics have no direct relationship — Analytics reads from an event log.'},
+};
+
+let contexts = []; // {id, name, x, y, el}
+let connections = []; // {from, to, type}
+let idC = 0;
+let connectMode = false;
+let connectFirst = null;
+
+const wrap = document.getElementById('canvas-wrap');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+function resizeCanvas() {
+  canvas.width = wrap.clientWidth;
+  canvas.height = wrap.clientHeight;
+  draw();
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (const c of connections) {
+    const a = contexts.find(x => x.id === c.from);
+    const b = contexts.find(x => x.id === c.to);
+    if (!a || !b) continue;
+    const rel = RELS[c.type];
+    const ax = a.x + a.el.offsetWidth/2, ay = a.y + a.el.offsetHeight/2;
+    const bx = b.x + b.el.offsetWidth/2, by = b.y + b.el.offsetHeight/2;
+    ctx.beginPath();
+    ctx.setLineDash(rel.dash);
+    ctx.strokeStyle = rel.color;
+    ctx.lineWidth = 2;
+    ctx.moveTo(ax, ay);
+    ctx.lineTo(bx, by);
+    ctx.stroke();
+    // label midpoint
+    const mx = (ax+bx)/2, my = (ay+by)/2;
+    ctx.setLineDash([]);
+    ctx.fillStyle = rel.color;
+    ctx.font = '10px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText(c.type, mx, my - 6);
+    // arrow
+    const angle = Math.atan2(by-ay, bx-ax);
+    const len = 8;
+    ctx.beginPath();
+    ctx.moveTo(bx - len*Math.cos(angle-0.4), by - len*Math.sin(angle-0.4));
+    ctx.lineTo(bx, by);
+    ctx.lineTo(bx - len*Math.cos(angle+0.4), by - len*Math.sin(angle+0.4));
+    ctx.strokeStyle = rel.color;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+}
+
+function addContext() {
+  const id = 'c' + (idC++);
+  const name = 'Context ' + (idC);
+  const x = 60 + Math.random() * (wrap.clientWidth - 200);
+  const y = 60 + Math.random() * (wrap.clientHeight - 140);
+
+  const el = document.createElement('div');
+  el.className = 'ctx-box';
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  el.dataset.id = id;
+
+  const h3 = document.createElement('h3');
+  h3.textContent = name;
+  const inp = document.createElement('input');
+  inp.className = 'edit-name';
+  inp.value = name;
+  const del = document.createElement('button');
+  del.className = 'del-btn';
+  del.textContent = '×';
+  del.onclick = (e) => { e.stopPropagation(); removeContext(id); };
+
+  inp.addEventListener('blur', () => { el.classList.remove('editing'); h3.textContent = inp.value || name; const c = contexts.find(x=>x.id===id); if(c)c.name=inp.value; });
+  inp.addEventListener('keydown', e => { if(e.key==='Enter') inp.blur(); });
+  h3.addEventListener('dblclick', () => { el.classList.add('editing'); inp.focus(); inp.select(); });
+
+  el.appendChild(del);
+  el.appendChild(h3);
+  el.appendChild(inp);
+  wrap.appendChild(el);
+
+  const obj = {id, name, x, y, el};
+  contexts.push(obj);
+  makeDraggable(el, obj);
+  el.addEventListener('click', () => onBoxClick(id));
+  draw();
+}
+
+function makeDraggable(el, obj) {
+  let ox, oy, dragging = false;
+  el.addEventListener('mousedown', e => {
+    if (e.target.classList.contains('del-btn') || e.target.classList.contains('edit-name')) return;
+    dragging = true;
+    ox = e.clientX - obj.x;
+    oy = e.clientY - obj.y;
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    obj.x = e.clientX - ox;
+    obj.y = e.clientY - oy;
+    el.style.left = obj.x + 'px';
+    el.style.top = obj.y + 'px';
+    draw();
+  });
+  document.addEventListener('mouseup', () => { dragging = false; });
+}
+
+function onBoxClick(id) {
+  if (!connectMode) return;
+  if (!connectFirst) {
+    connectFirst = id;
+    const el = contexts.find(c=>c.id===id)?.el;
+    if (el) el.classList.add('connect-hover');
+  } else {
+    if (connectFirst === id) { resetConnect(); return; }
+    showRelMenu(connectFirst, id);
+    resetConnect();
+  }
+}
+
+function toggleConnect() {
+  connectMode = !connectMode;
+  connectFirst = null;
+  document.getElementById('connect-btn').className = connectMode ? 'active' : '';
+  document.getElementById('connect-btn').textContent = connectMode ? '✕ Cancel Connect' : 'Connect';
+  if (!connectMode) contexts.forEach(c => c.el.classList.remove('connect-hover'));
+}
+
+function resetConnect() {
+  contexts.forEach(c => c.el.classList.remove('connect-hover'));
+  connectFirst = null;
+}
+
+function showRelMenu(from, to) {
+  const menu = document.getElementById('rel-menu');
+  menu.innerHTML = '<div>Choose relationship type</div>';
+  for (const [type, rel] of Object.entries(RELS)) {
+    const btn = document.createElement('button');
+    btn.style.color = rel.color;
+    btn.textContent = type;
+    btn.onclick = () => {
+      connections.push({from, to, type});
+      menu.style.display = 'none';
+      draw();
+    };
+    menu.appendChild(btn);
+  }
+  const fromEl = contexts.find(c=>c.id===from)?.el;
+  const rect = fromEl?.getBoundingClientRect();
+  menu.style.left = (rect ? rect.right + 10 : 200) + 'px';
+  menu.style.top = (rect ? rect.top : 100) + 'px';
+  menu.style.display = 'block';
+}
+
+document.addEventListener('click', e => {
+  const menu = document.getElementById('rel-menu');
+  if (!menu.contains(e.target)) menu.style.display = 'none';
+});
+
+canvas.addEventListener('click', e => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  for (const c of connections) {
+    const a = contexts.find(x=>x.id===c.from), b = contexts.find(x=>x.id===c.to);
+    if (!a||!b) continue;
+    const ax=a.x+a.el.offsetWidth/2, ay=a.y+a.el.offsetHeight/2;
+    const bx=b.x+b.el.offsetWidth/2, by=b.y+b.el.offsetHeight/2;
+    if (distToSegment(mx,my,ax,ay,bx,by) < 8) { showPanel(c); return; }
+  }
+});
+
+function distToSegment(px,py,ax,ay,bx,by) {
+  const dx=bx-ax,dy=by-ay,len2=dx*dx+dy*dy;
+  if(len2===0) return Math.hypot(px-ax,py-ay);
+  let t=((px-ax)*dx+(py-ay)*dy)/len2;
+  t=Math.max(0,Math.min(1,t));
+  return Math.hypot(px-(ax+t*dx),py-(ay+t*dy));
+}
+
+function showPanel(conn) {
+  const rel = RELS[conn.type];
+  const a = contexts.find(x=>x.id===conn.from)?.name ?? conn.from;
+  const b = contexts.find(x=>x.id===conn.to)?.name ?? conn.to;
+  document.getElementById('panel-title').textContent = conn.type;
+  document.getElementById('panel-body').innerHTML = `
+    <p style="color:${rel.color};font-weight:600;margin-bottom:8px">${a} → ${b}</p>
+    <h3>What is it?</h3><p>${rel.info}</p>
+    <h3>Payments example</h3><p>${rel.example}</p>
+    <div style="margin-top:14px"><button class="danger" style="font-size:11px" onclick="removeConn('${conn.from}','${conn.to}','${conn.type}')">Remove this connection</button></div>
+  `;
+  document.getElementById('panel').classList.remove('hidden');
+}
+
+function removeConn(from, to, type) {
+  connections = connections.filter(c => !(c.from===from && c.to===to && c.type===type));
+  closePanel(); draw();
+}
+
+function closePanel() { document.getElementById('panel').classList.add('hidden'); }
+
+function removeContext(id) {
+  const obj = contexts.find(c=>c.id===id);
+  if (obj) { obj.el.remove(); }
+  contexts = contexts.filter(c=>c.id!==id);
+  connections = connections.filter(c=>c.from!==id && c.to!==id);
+  draw();
+}
+
+function clearAll() {
+  if (!confirm('Clear everything?')) return;
+  contexts.forEach(c => c.el.remove());
+  contexts = []; connections = [];
+  draw();
+}
+
+// Seed with example
+setTimeout(() => {
+  addContext(); contexts[0].name='Billing'; contexts[0].el.querySelector('h3').textContent='Billing';
+  addContext(); contexts[1].name='Identity'; contexts[1].el.querySelector('h3').textContent='Identity';
+  addContext(); contexts[2].name='Notifications'; contexts[2].el.querySelector('h3').textContent='Notifications';
+  contexts[0].x=80; contexts[0].y=140; contexts[0].el.style.cssText+=';left:80px;top:140px';
+  contexts[1].x=320; contexts[1].y=80; contexts[1].el.style.cssText+=';left:320px;top:80px';
+  contexts[2].x=320; contexts[2].y=220; contexts[2].el.style.cssText+=';left:320px;top:220px';
+  connections.push({from:'c0',to:'c1',type:'ACL'});
+  connections.push({from:'c1',to:'c2',type:'Customer/Supplier'});
+  draw();
+}, 100);
+</script>
+</body>
+</html>
