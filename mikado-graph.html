@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mikado Graph Builder</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#0f1117;color:#e2e8f0;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+header{padding:10px 20px;border-bottom:1px solid #1e2533;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{font-size:15px;font-weight:700;color:#fff}
+.toolbar{display:flex;gap:8px;margin-left:auto;align-items:center;flex-wrap:wrap}
+button{padding:6px 12px;border-radius:6px;border:1px solid #2d3748;background:#141824;color:#e2e8f0;font-size:12px;cursor:pointer}
+button:hover{border-color:#4a7fb5;color:#90cdf4}
+button.primary{background:#1e3a5f;border-color:#4a7fb5;color:#90cdf4}
+button.danger{background:#2a1010;border-color:#c05252;color:#fc8181}
+.progress-wrap{display:flex;align-items:center;gap:8px;font-size:11px;color:#718096}
+.progress-bar{width:120px;height:6px;background:#1e2533;border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:#68d391;border-radius:3px;transition:width .3s}
+main{flex:1;position:relative;overflow:hidden}
+#svg-wrap{width:100%;height:100%;overflow:auto}
+svg{min-width:100%;min-height:100%}
+.node-group{cursor:pointer}
+.node-rect{rx:8;ry:8;stroke-width:1.5;transition:filter .15s}
+.node-group:hover .node-rect{filter:brightness(1.3)}
+.state-todo .node-rect{fill:#1e2533;stroke:#4a5568}
+.state-inprogress .node-rect{fill:#1e3a5f;stroke:#4a7fb5}
+.state-done .node-rect{fill:#1a3a2a;stroke:#48bb78}
+.node-title{font-size:12px;font-weight:600;fill:#e2e8f0;pointer-events:none}
+.node-status{font-size:9px;fill:#718096;pointer-events:none}
+.edge{stroke:#2d3748;stroke-width:1.5;fill:none}
+/* Modal */
+#modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50}
+#modal-bg.open{display:flex}
+#modal{background:#141824;border:1px solid #2d3748;border-radius:10px;padding:24px;width:340px}
+#modal h3{font-size:14px;font-weight:600;margin-bottom:16px}
+#modal label{font-size:11px;color:#718096;display:block;margin-bottom:4px}
+#modal input,#modal textarea{width:100%;padding:8px 10px;background:#0f1117;border:1px solid #2d3748;border-radius:6px;color:#e2e8f0;font-size:13px;margin-bottom:12px;resize:none}
+#modal input:focus,#modal textarea:focus{outline:none;border-color:#4a7fb5}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end}
+/* Tooltip */
+#tooltip{position:fixed;background:#1e2533;border:1px solid #2d3748;border-radius:6px;padding:8px 10px;font-size:11px;color:#a0aec0;pointer-events:none;display:none;max-width:200px;z-index:100}
+/* Context menu */
+#ctx-menu{position:fixed;background:#141824;border:1px solid #2d3748;border-radius:8px;padding:4px;display:none;z-index:60;min-width:160px}
+#ctx-menu button{display:block;width:100%;text-align:left;border:none;background:none;padding:7px 12px;font-size:12px;color:#e2e8f0;border-radius:5px}
+#ctx-menu button:hover{background:#1e2533;border:none}
+/* Legend */
+.legend{display:flex;gap:12px;align-items:center}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:10px;color:#718096}
+.ldot{width:10px;height:10px;border-radius:3px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Mikado Graph Builder</h1>
+  <div class="legend">
+    <div class="legend-item"><div class="ldot" style="background:#2d3748;border:1px solid #4a5568"></div>Todo</div>
+    <div class="legend-item"><div class="ldot" style="background:#1e3a5f;border:1px solid #4a7fb5"></div>In Progress</div>
+    <div class="legend-item"><div class="ldot" style="background:#1a3a2a;border:1px solid #48bb78"></div>Done</div>
+  </div>
+  <div class="toolbar">
+    <div class="progress-wrap">
+      <span id="prog-label">0 / 1 done</span>
+      <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+    </div>
+    <button class="primary" onclick="addChildTo(null)">+ Add Root Node</button>
+    <button onclick="resetTree()">Reset</button>
+  </div>
+</header>
+
+<main>
+  <div id="svg-wrap">
+    <svg id="svg" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#2d3748"/>
+        </marker>
+      </defs>
+      <g id="edges"></g>
+      <g id="nodes"></g>
+    </svg>
+  </div>
+</main>
+
+<div id="tooltip"></div>
+
+<div id="modal-bg">
+  <div id="modal">
+    <h3 id="modal-title">Add Node</h3>
+    <label>Name</label>
+    <input id="modal-name" placeholder="e.g. Extract PaymentService" />
+    <label>Note (optional)</label>
+    <textarea id="modal-note" rows="3" placeholder="Why is this a prerequisite?"></textarea>
+    <div class="modal-btns">
+      <button onclick="closeModal()">Cancel</button>
+      <button class="primary" onclick="submitModal()">Add</button>
+    </div>
+  </div>
+</div>
+
+<div id="ctx-menu">
+  <button onclick="ctxAddChild()">+ Add Prerequisite</button>
+  <button onclick="ctxCycleState()">Cycle State</button>
+  <button onclick="ctxRename()">Rename</button>
+  <button class="danger" onclick="ctxDelete()">Delete Node</button>
+</div>
+
+<script>
+let tree = {
+  id: 'root', name: 'Refactoring Goal', note: 'The end goal. Work backwards to find prerequisites.', state: 'todo', children: []
+};
+let idCounter = 1;
+let modalCb = null;
+let ctxNodeId = null;
+
+// Layout constants
+const NW = 160, NH = 50, HGAP = 30, VGAP = 70;
+
+function genId() { return 'n' + (idCounter++); }
+
+function findNode(id, node = tree) {
+  if (node.id === id) return node;
+  for (const c of node.children) { const f = findNode(id, c); if (f) return f; }
+  return null;
+}
+
+function findParent(id, node = tree, parent = null) {
+  if (node.id === id) return parent;
+  for (const c of node.children) { const f = findParent(id, c, node); if (f !== undefined) return f; }
+  return undefined;
+}
+
+function subtreeWidth(node) {
+  if (!node.children.length) return NW;
+  return Math.max(NW, node.children.reduce((s, c) => s + subtreeWidth(c) + HGAP, -HGAP));
+}
+
+function layout(node, x, y, positions = {}) {
+  positions[node.id] = { x, y };
+  if (!node.children.length) return positions;
+  const total = node.children.reduce((s, c) => s + subtreeWidth(c) + HGAP, -HGAP);
+  let cx = x - total / 2;
+  for (const c of node.children) {
+    const cw = subtreeWidth(c);
+    layout(c, cx + cw / 2, y + NH + VGAP, positions);
+    cx += cw + HGAP;
+  }
+  return positions;
+}
+
+function countNodes(node) {
+  return 1 + node.children.reduce((s, c) => s + countNodes(c), 0);
+}
+function countDone(node) {
+  return (node.state === 'done' ? 1 : 0) + node.children.reduce((s, c) => s + countDone(c), 0);
+}
+
+function stateLabel(s) {
+  return s === 'todo' ? 'Todo' : s === 'inprogress' ? 'In Progress' : 'Done';
+}
+
+function nextState(s) {
+  return s === 'todo' ? 'inprogress' : s === 'inprogress' ? 'done' : 'todo';
+}
+
+function canMarkDone(node) {
+  return node.children.every(c => c.state === 'done');
+}
+
+function render() {
+  const svgEl = document.getElementById('svg');
+  const pos = layout(tree, 0, 0);
+
+  // Compute bounding box
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const p of Object.values(pos)) {
+    minX = Math.min(minX, p.x - NW/2);
+    minY = Math.min(minY, p.y);
+    maxX = Math.max(maxX, p.x + NW/2);
+    maxY = Math.max(maxY, p.y + NH);
+  }
+  const pad = 40;
+  const W = Math.max(maxX - minX + pad*2, window.innerWidth);
+  const H = Math.max(maxY - minY + pad*2, window.innerHeight - 60);
+  svgEl.setAttribute('width', W);
+  svgEl.setAttribute('height', H);
+  const ox = -minX + pad, oy = -minY + pad;
+
+  // Edges
+  const edgesEl = document.getElementById('edges');
+  edgesEl.innerHTML = '';
+  renderEdges(tree, pos, ox, oy, edgesEl);
+
+  // Nodes
+  const nodesEl = document.getElementById('nodes');
+  nodesEl.innerHTML = '';
+  renderNodes(tree, pos, ox, oy, nodesEl);
+
+  // Progress
+  const total = countNodes(tree), done = countDone(tree);
+  document.getElementById('prog-label').textContent = `${done} / ${total} done`;
+  document.getElementById('prog-fill').style.width = `${Math.round(done/total*100)}%`;
+}
+
+function renderEdges(node, pos, ox, oy, el) {
+  for (const c of node.children) {
+    const p = pos[node.id], q = pos[c.id];
+    const x1 = p.x + ox, y1 = p.y + oy + NH;
+    const x2 = q.x + ox, y2 = q.y + oy;
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    const cy = (y1 + y2) / 2;
+    path.setAttribute('d', `M${x1},${y1} C${x1},${cy} ${x2},${cy} ${x2},${y2}`);
+    path.setAttribute('class', 'edge');
+    el.appendChild(path);
+    renderEdges(c, pos, ox, oy, el);
+  }
+}
+
+function renderNodes(node, pos, ox, oy, el) {
+  const p = pos[node.id];
+  const x = p.x + ox - NW/2, y = p.y + oy;
+
+  const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.setAttribute('class', `node-group state-${node.state}`);
+  g.setAttribute('transform', `translate(${x},${y})`);
+
+  const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+  rect.setAttribute('class','node-rect');
+  rect.setAttribute('width', NW);
+  rect.setAttribute('height', NH);
+  rect.setAttribute('rx', 8);
+  g.appendChild(rect);
+
+  const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+  text.setAttribute('class','node-title');
+  text.setAttribute('x', NW/2);
+  text.setAttribute('y', 22);
+  text.setAttribute('text-anchor','middle');
+  text.textContent = node.name.length > 18 ? node.name.slice(0,17)+'…' : node.name;
+  g.appendChild(text);
+
+  const sub = document.createElementNS('http://www.w3.org/2000/svg','text');
+  sub.setAttribute('class','node-status');
+  sub.setAttribute('x', NW/2);
+  sub.setAttribute('y', 36);
+  sub.setAttribute('text-anchor','middle');
+  sub.textContent = stateLabel(node.state);
+  g.appendChild(sub);
+
+  g.addEventListener('contextmenu', (e) => { e.preventDefault(); showCtxMenu(e, node.id); });
+  g.addEventListener('click', () => cycleState(node.id));
+  g.addEventListener('mouseenter', (e) => showTooltip(e, node));
+  g.addEventListener('mouseleave', hideTooltip);
+
+  el.appendChild(g);
+  for (const c of node.children) renderNodes(c, pos, ox, oy, el);
+}
+
+function cycleState(id) {
+  const node = findNode(id);
+  if (!node) return;
+  const next = nextState(node.state);
+  if (next === 'done' && !canMarkDone(node)) {
+    alert('Complete all prerequisite nodes first.');
+    return;
+  }
+  node.state = next;
+  render();
+}
+
+function showTooltip(e, node) {
+  if (!node.note) return;
+  const t = document.getElementById('tooltip');
+  t.textContent = node.note;
+  t.style.display = 'block';
+  t.style.left = (e.clientX + 12) + 'px';
+  t.style.top = (e.clientY + 12) + 'px';
+}
+function hideTooltip() { document.getElementById('tooltip').style.display = 'none'; }
+
+function showCtxMenu(e, id) {
+  ctxNodeId = id;
+  const m = document.getElementById('ctx-menu');
+  m.style.display = 'block';
+  m.style.left = e.clientX + 'px';
+  m.style.top = e.clientY + 'px';
+}
+document.addEventListener('click', () => { document.getElementById('ctx-menu').style.display = 'none'; });
+
+function ctxAddChild() { addChildTo(ctxNodeId); }
+function ctxCycleState() { cycleState(ctxNodeId); }
+function ctxRename() {
+  const node = findNode(ctxNodeId);
+  if (!node) return;
+  openModal('Rename Node', node.name, node.note, (name, note) => {
+    node.name = name; node.note = note; render();
+  });
+}
+function ctxDelete() {
+  if (ctxNodeId === 'root') { alert('Cannot delete root node.'); return; }
+  const parent = findParent(ctxNodeId);
+  if (parent) { parent.children = parent.children.filter(c => c.id !== ctxNodeId); render(); }
+}
+
+function addChildTo(parentId) {
+  openModal('Add Prerequisite Node', '', '', (name, note) => {
+    const newNode = { id: genId(), name, note, state: 'todo', children: [] };
+    if (parentId === null) {
+      tree.children.push(newNode);
+    } else {
+      const p = findNode(parentId);
+      if (p) p.children.push(newNode);
+    }
+    render();
+  });
+}
+
+function openModal(title, name, note, cb) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-name').value = name;
+  document.getElementById('modal-note').value = note;
+  modalCb = cb;
+  document.getElementById('modal-bg').classList.add('open');
+  setTimeout(() => document.getElementById('modal-name').focus(), 50);
+}
+
+function closeModal() { document.getElementById('modal-bg').classList.remove('open'); modalCb = null; }
+
+function submitModal() {
+  const name = document.getElementById('modal-name').value.trim();
+  if (!name) { document.getElementById('modal-name').focus(); return; }
+  const note = document.getElementById('modal-note').value.trim();
+  closeModal();
+  if (modalCb) { modalCb(name, note); modalCb = null; }
+}
+
+document.getElementById('modal-name').addEventListener('keydown', e => { if (e.key === 'Enter') submitModal(); });
+document.getElementById('modal-bg').addEventListener('click', e => { if (e.target === document.getElementById('modal-bg')) closeModal(); });
+
+function resetTree() {
+  if (!confirm('Reset the entire tree?')) return;
+  tree = { id: 'root', name: 'Refactoring Goal', note: 'The end goal. Work backwards.', state: 'todo', children: [] };
+  idCounter = 1;
+  render();
+}
+
+// Info panel at bottom
+const info = document.createElement('div');
+info.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#0a0d14;border-top:1px solid #1e2533;padding:6px 20px;font-size:10px;color:#4a5568;display:flex;gap:20px';
+info.innerHTML = '<span><b style="color:#718096">Mikado Method:</b> 1. Set a goal at the root</span><span>2. Try to make the change — when something breaks, add it as a child node</span><span>3. Complete leaf nodes first (no children), check them done</span><span>Right-click any node for options · Click to cycle state</span>';
+document.body.appendChild(info);
+
+render();
+</script>
+</body>
+</html>
