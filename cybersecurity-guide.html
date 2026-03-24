@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cybersecurity for Full-Stack Engineers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #0d1117;
+  --bg2:       #161b22;
+  --bg3:       #1c2333;
+  --border:    #21262d;
+  --border2:   #30363d;
+  --text:      #c9d1d9;
+  --text-dim:  #6e7681;
+  --text-head: #f0f6fc;
+  --accent:    #4493f8;
+  --accent-bg: rgba(68,147,248,.08);
+  --red:       #f85149;
+  --red-bg:    rgba(248,81,73,.08);
+  --red-bd:    rgba(248,81,73,.25);
+  --green:     #3fb950;
+  --green-bg:  rgba(63,185,80,.08);
+  --green-bd:  rgba(63,185,80,.25);
+  --yellow:    #d29922;
+  --yellow-bg: rgba(210,153,34,.08);
+  --nav-w:     224px;
+  --sans:      'Inter', system-ui, sans-serif;
+  --mono:      'JetBrains Mono', 'Fira Code', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: var(--sans); background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.7; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* Layout */
+#nav {
+  position: fixed; top: 0; left: 0; bottom: 0;
+  width: var(--nav-w);
+  background: var(--bg); border-right: 1px solid var(--border);
+  overflow-y: auto; z-index: 50;
+  display: flex; flex-direction: column;
+}
+#content {
+  margin-left: var(--nav-w);
+  padding: 56px 64px 100px;
+  max-width: calc(var(--nav-w) + 780px);
+}
+
+/* Sidebar */
+.nav-brand { padding: 20px 16px 16px; border-bottom: 1px solid var(--border); }
+.nav-brand a { text-decoration: none; color: var(--text-dim); font-size: 11px; display: flex; align-items: center; gap: 6px; transition: color .15s; }
+.nav-brand a:hover { color: var(--text); }
+.nav-brand .title { font-size: 13px; font-weight: 600; color: var(--text); margin-top: 10px; line-height: 1.3; }
+.nav-brand .sub   { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+.nav-group { padding: 16px 0 4px; }
+.nav-group-label { padding: 0 16px 6px; font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dim); }
+.nav-link {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 16px; font-size: 12.5px; color: var(--text-dim);
+  text-decoration: none; transition: color .12s, background .12s;
+  border-left: 2px solid transparent;
+}
+.nav-link:hover { color: var(--text); background: var(--bg2); }
+.nav-link.active { color: var(--accent); border-left-color: var(--accent); background: var(--accent-bg); }
+.nav-num { font-family: var(--mono); font-size: 10px; color: var(--text-dim); min-width: 18px; opacity: .6; }
+.nav-link.active .nav-num { opacity: 1; color: var(--accent); }
+
+/* Page header */
+.page-header { padding-bottom: 40px; margin-bottom: 48px; border-bottom: 1px solid var(--border); }
+.page-eyebrow { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; color: var(--red); margin-bottom: 16px; }
+.page-title { font-size: 30px; font-weight: 700; color: var(--text-head); line-height: 1.2; letter-spacing: -.3px; margin-bottom: 10px; }
+.page-subtitle { font-size: 14px; color: var(--text-dim); margin-bottom: 20px; }
+.tech-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.tech-pill { padding: 2px 10px; background: var(--bg2); border: 1px solid var(--border2); border-radius: 12px; font-size: 11.5px; color: var(--text-dim); font-family: var(--mono); }
+.module-nav { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-top: 28px; }
+.mod-chip { display: block; padding: 10px 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; text-decoration: none; color: var(--text-dim); font-size: 11px; transition: all .12s; line-height: 1.4; }
+.mod-chip:hover { border-color: var(--border2); color: var(--text); }
+.mod-chip .mn { display: block; font-family: var(--mono); font-size: 10px; color: var(--accent); margin-bottom: 3px; }
+
+/* How to use */
+.how-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-top: 16px; }
+.how-item { display: flex; gap: 12px; padding: 14px; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; align-items: flex-start; }
+.how-num { width: 22px; height: 22px; background: var(--bg3); border: 1px solid var(--border2); border-radius: 5px; font-size: 11px; font-weight: 700; font-family: var(--mono); color: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.how-text { font-size: 12.5px; color: var(--text-dim); }
+.how-text strong { color: var(--text); }
+
+/* Module section */
+.module { margin-bottom: 72px; scroll-margin-top: 32px; }
+.module-hd { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 28px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+.module-badge { font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--text-dim); background: var(--bg2); border: 1px solid var(--border2); border-radius: 4px; padding: 4px 9px; white-space: nowrap; margin-top: 3px; }
+.module-label { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 4px; }
+.module-title { font-size: 20px; font-weight: 700; color: var(--text-head); line-height: 1.25; }
+.module-sub { font-size: 12.5px; color: var(--text-dim); margin-top: 4px; }
+
+/* Subsection */
+.sub { margin-bottom: 32px; }
+.sub-title { font-size: 13.5px; font-weight: 600; color: var(--text-head); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.sub-title .sub-id { color: var(--text-dim); font-weight: 400; margin-right: 6px; font-family: var(--mono); font-size: 12px; }
+p { margin-bottom: 12px; }
+p:last-child { margin-bottom: 0; }
+
+/* Code blocks */
+.code-wrap { margin: 14px 0; border-radius: 7px; border: 1px solid var(--border); overflow: hidden; font-size: 12.5px; }
+.code-wrap.vuln  { border-color: var(--red-bd); }
+.code-wrap.fix   { border-color: var(--green-bd); }
+.code-wrap.note  { border-color: var(--border2); }
+.code-wrap.attack{ border-color: rgba(210,153,34,.3); }
+.code-bar { display: flex; align-items: center; justify-content: space-between; padding: 6px 14px; font-size: 10.5px; font-weight: 600; letter-spacing: .5px; border-bottom: 1px solid var(--border); }
+.code-bar.vuln  { background: var(--red-bg);    color: var(--red);    border-color: var(--red-bd); }
+.code-bar.fix   { background: var(--green-bg);  color: var(--green);  border-color: var(--green-bd); }
+.code-bar.note  { background: var(--bg2);       color: var(--text-dim); }
+.code-bar.attack{ background: var(--yellow-bg); color: var(--yellow); border-color: rgba(210,153,34,.25); }
+.code-bar-lang { font-family: var(--mono); font-weight: 400; opacity: .7; font-size: 10px; }
+.copy-btn { background: transparent; border: none; color: inherit; cursor: pointer; font-family: var(--mono); font-size: 10px; opacity: .6; padding: 0; transition: opacity .12s; }
+.copy-btn:hover { opacity: 1; }
+pre { background: var(--bg2); padding: 16px 18px; overflow-x: auto; line-height: 1.65; }
+code { font-family: var(--mono); font-size: 12.5px; line-height: 1.65; }
+p code, li code { background: var(--bg3); padding: 1px 6px; border-radius: 4px; font-size: 12px; color: var(--text); border: 1px solid var(--border2); }
+
+/* Syntax colors */
+.kw  { color: #ff7b72; }
+.fn  { color: #d2a8ff; }
+.str { color: #a5d6ff; }
+.num { color: #79c0ff; }
+.cm  { color: var(--text-dim); font-style: italic; }
+.cm-r{ color: var(--red);    font-style: italic; }
+.cm-g{ color: var(--green);  font-style: italic; }
+.cm-y{ color: var(--yellow); font-style: italic; }
+.var { color: #ffa657; }
+.at  { color: var(--yellow); font-weight: 500; }
+
+/* Tables */
+.tbl-wrap { margin: 14px 0; border-radius: 7px; border: 1px solid var(--border); overflow: hidden; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead tr { background: var(--bg2); }
+th { text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; color: var(--text-dim); border-bottom: 1px solid var(--border); }
+td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.55; }
+td:first-child { color: var(--text-head); font-weight: 500; white-space: nowrap; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,.015); }
+
+/* Callouts */
+.callout { padding: 14px 16px; border-radius: 6px; margin: 14px 0; font-size: 13px; line-height: 1.65; border-left: 3px solid transparent; }
+.callout-info   { background: var(--accent-bg); border-color: var(--accent); }
+.callout-danger { background: var(--red-bg);    border-color: var(--red); }
+.callout-safe   { background: var(--green-bg);  border-color: var(--green); }
+.callout-warn   { background: var(--yellow-bg); border-color: var(--yellow); }
+.callout-head { font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 6px; }
+.callout-info   .callout-head { color: var(--accent); }
+.callout-danger .callout-head { color: var(--red); }
+.callout-safe   .callout-head { color: var(--green); }
+.callout-warn   .callout-head { color: var(--yellow); }
+
+/* Lists */
+ul.bullets { margin: 10px 0 10px 4px; }
+ul.bullets li { padding: 4px 0 4px 20px; position: relative; font-size: 13px; color: var(--text); border-bottom: 1px solid var(--border); }
+ul.bullets li:last-child { border-bottom: none; }
+ul.bullets li::before { content: '—'; position: absolute; left: 0; color: var(--text-dim); }
+ol.steps { list-style: none; counter-reset: steps; margin: 12px 0; }
+ol.steps li { counter-increment: steps; padding: 9px 0 9px 36px; position: relative; border-bottom: 1px solid var(--border); font-size: 13px; }
+ol.steps li:last-child { border-bottom: none; }
+ol.steps li::before { content: counter(steps); position: absolute; left: 0; top: 10px; width: 22px; height: 22px; background: var(--bg3); border: 1px solid var(--border2); border-radius: 5px; font-family: var(--mono); font-size: 10px; font-weight: 700; color: var(--accent); display: flex; align-items: center; justify-content: center; }
+
+/* Payload list */
+.payloads { display: flex; flex-direction: column; gap: 4px; margin: 12px 0; }
+.payload { display: flex; align-items: center; gap: 10px; padding: 7px 12px; background: var(--red-bg); border: 1px solid var(--red-bd); border-radius: 5px; font-family: var(--mono); font-size: 11.5px; color: var(--red); }
+.payload::before { content: '▸'; opacity: .6; }
+
+/* Cheatsheet */
+.cheat-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+.oneliner { font-family: var(--mono); font-size: 11.5px; padding: 5px 8px; background: var(--bg3); border-radius: 4px; color: var(--green); margin-bottom: 4px; line-height: 1.5; }
+
+/* Security checklist */
+.sec-check { margin: 12px 0; }
+.sc-row { display: flex; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--border); align-items: flex-start; font-size: 13px; }
+.sc-row:last-child { border-bottom: none; }
+.sc-area { color: var(--text-head); font-weight: 600; min-width: 130px; flex-shrink: 0; }
+.sc-text  { color: var(--text); }
+
+/* Resources */
+.res-list { margin: 12px 0; }
+.res-row { display: flex; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--border); align-items: flex-start; font-size: 13px; }
+.res-row:last-child { border-bottom: none; }
+.res-name { color: var(--accent); font-weight: 500; min-width: 200px; flex-shrink: 0; }
+.res-desc { color: var(--text); }
+
+/* Divider */
+.divider { height: 1px; background: var(--border); margin: 48px 0; }
+
+/* Report template */
+.report { background: var(--bg2); border: 1px solid var(--border); border-radius: 7px; padding: 20px; margin: 14px 0; }
+.report-field { margin-bottom: 14px; }
+.report-field:last-child { margin-bottom: 0; }
+.report-key { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 5px; }
+.report-val { font-size: 12.5px; padding: 10px 12px; background: var(--bg3); border-radius: 5px; border: 1px solid var(--border2); line-height: 1.7; color: var(--text); }
+.report-val code { font-family: var(--mono); font-size: 11.5px; color: var(--accent); background: none; border: none; padding: 0; }
+
+/* Back link */
+.back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-dim); text-decoration: none; margin-bottom: 32px; transition: color .12s; }
+.back-link:hover { color: var(--text); }
+
+/* Footer */
+.footer-warn { margin-top: 80px; padding: 16px 18px; background: var(--red-bg); border: 1px solid var(--red-bd); border-radius: 7px; font-size: 12.5px; color: var(--text-dim); line-height: 1.6; }
+.footer-warn strong { color: var(--red); }
+
+/* Responsive */
+@media (max-width: 860px) {
+  #nav { display: none; }
+  #content { margin-left: 0; padding: 32px 20px 60px; }
+  .module-nav { grid-template-columns: repeat(2,1fr); }
+  .cheat-cols { grid-template-columns: 1fr; }
+  .how-grid   { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav id="nav">
+  <div class="nav-brand">
+    <a href="index.html">← Concept Atlas</a>
+    <div class="title">Cybersecurity for Full-Stack Engineers</div>
+    <div class="sub">Payment Systems Focus</div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Overview</div>
+    <a class="nav-link" href="#top"><span class="nav-num">⚔</span> Introduction</a>
+    <a class="nav-link" href="#howto"><span class="nav-num">→</span> How to Use</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Modules</div>
+    <a class="nav-link" href="#m01"><span class="nav-num">01</span> Web Basics</a>
+    <a class="nav-link" href="#m02"><span class="nav-num">02</span> Recon</a>
+    <a class="nav-link" href="#m03"><span class="nav-num">03</span> XSS</a>
+    <a class="nav-link" href="#m04"><span class="nav-num">04</span> SQLi</a>
+    <a class="nav-link" href="#m05"><span class="nav-num">05</span> Auth</a>
+    <a class="nav-link" href="#m06"><span class="nav-num">06</span> IDOR</a>
+    <a class="nav-link" href="#m07"><span class="nav-num">07</span> SSRF &amp; Files</a>
+    <a class="nav-link" href="#m08"><span class="nav-num">08</span> API Security</a>
+    <a class="nav-link" href="#m09"><span class="nav-num">09</span> Biz Logic</a>
+    <a class="nav-link" href="#m10"><span class="nav-num">10</span> Bug Bounty</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Reference</div>
+    <a class="nav-link" href="#cheatsheet"><span class="nav-num">★</span> Cheatsheet</a>
+    <a class="nav-link" href="#resources"><span class="nav-num">↗</span> Resources</a>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main id="content">
+  <div id="top"></div>
+  <a class="back-link" href="index.html">← Concept Atlas</a>
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="page-eyebrow">⚔ Offensive &amp; Defensive Security</div>
+    <h1 class="page-title">Cybersecurity for<br>Full-Stack Engineers</h1>
+    <p class="page-subtitle">Theory + Application — Payment Systems Focus</p>
+    <div class="tech-row">
+      <span class="tech-pill">JS</span><span class="tech-pill">PHP</span><span class="tech-pill">MySQL</span>
+      <span class="tech-pill">Vue</span><span class="tech-pill">Docker</span><span class="tech-pill">Linux</span>
+      <span class="tech-pill">Vite</span><span class="tech-pill">TypeScript</span>
+    </div>
+    <div class="module-nav">
+      <a class="mod-chip" href="#m01"><span class="mn">01</span>Web Basics</a>
+      <a class="mod-chip" href="#m02"><span class="mn">02</span>Recon</a>
+      <a class="mod-chip" href="#m03"><span class="mn">03</span>XSS</a>
+      <a class="mod-chip" href="#m04"><span class="mn">04</span>SQLi</a>
+      <a class="mod-chip" href="#m05"><span class="mn">05</span>Auth</a>
+      <a class="mod-chip" href="#m06"><span class="mn">06</span>IDOR</a>
+      <a class="mod-chip" href="#m07"><span class="mn">07</span>SSRF / Files</a>
+      <a class="mod-chip" href="#m08"><span class="mn">08</span>API Security</a>
+      <a class="mod-chip" href="#m09"><span class="mn">09</span>Biz Logic</a>
+      <a class="mod-chip" href="#m10"><span class="mn">10</span>Bug Bounty</a>
+      <a class="mod-chip" href="#cheatsheet"><span class="mn">★</span>Cheatsheet</a>
+      <a class="mod-chip" href="#resources"><span class="mn">↗</span>Resources</a>
+    </div>
+  </div>
+
+  <!-- HOW TO USE -->
+  <section id="howto" class="module">
+    <div class="sub-title">How to Use This Guide</div>
+    <div class="how-grid">
+      <div class="how-item"><div class="how-num">1</div><div class="how-text"><strong>Theory first</strong> — read the concept, understand the attack from the attacker's perspective</div></div>
+      <div class="how-item"><div class="how-num">2</div><div class="how-text"><strong>Lab second</strong> — spin up the Docker environment and try the attack yourself</div></div>
+      <div class="how-item"><div class="how-num">3</div><div class="how-text"><strong>Defend</strong> — implement the fix in your stack (PHP / JS / MySQL / Vue)</div></div>
+      <div class="how-item"><div class="how-num">4</div><div class="how-text">Each module includes: <strong>Attack vector · Real-world payment example · Code snippets · Defense checklist</strong></div></div>
+    </div>
+  </section>
+
+  <!-- MODULE 01 -->
+  <section id="m01" class="module">
+    <div class="module-hd">
+      <div class="module-badge">MODULE 01</div>
+      <div class="module-hd-text">
+        <div class="module-label">Web Security</div>
+        <div class="module-title">Web Fundamentals for Hackers</div>
+        <div class="module-sub">HTTP, Headers, Cookies, Same-Origin Policy</div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">1.1</span>How HTTP Works (Attacker's View)</div>
+      <p>Every payment transaction travels over HTTP/HTTPS. Understanding the protocol at a low level is essential — attackers manipulate headers, methods, and payloads that developers often trust blindly.</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Component</th><th>Security Relevance</th></tr></thead>
+        <tbody>
+          <tr><td>HTTP Methods</td><td>GET vs POST — GET params logged in server logs, never use for sensitive data</td></tr>
+          <tr><td>Request Headers</td><td>Host, Referer, Origin — forgeable by attackers for CSRF/SSRF</td></tr>
+          <tr><td>Response Headers</td><td>Missing security headers = open attack surface</td></tr>
+          <tr><td>Status Codes</td><td>Verbose errors (500, 403) leak server internals</td></tr>
+          <tr><td>HTTP/2 Push</td><td>Can be abused for cache poisoning attacks</td></tr>
+        </tbody>
+      </table></div>
+      <div class="code-wrap note">
+        <div class="code-bar note"><span>Raw HTTP Request — what attackers see and modify</span><span class="code-bar-lang">HTTP</span></div>
+        <pre><code>POST /api/payment/process HTTP/1.1
+Host: payback.app
+Content-Type: application/json
+Cookie: session=abc123; user_id=42
+X-Forwarded-For: 127.0.0.1   <span class="cm-r">&lt;-- spoofable!</span>
+Origin: https://payback.app   <span class="cm-r">&lt;-- forgeable!</span>
+
+{"amount": 100, "to": "merchant_id_99"}</code></pre>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">1.2</span>Critical Security Headers</div>
+      <p>Missing headers are a free ticket for attackers. Set these on every PHP response:</p>
+      <div class="code-wrap fix">
+        <div class="code-bar fix"><span>✓ PHP — middleware/bootstrap</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><code><span class="fn">header</span>(<span class="str">"Content-Security-Policy: default-src 'self'; script-src 'self'"</span>);
+<span class="fn">header</span>(<span class="str">"X-Frame-Options: DENY"</span>);           <span class="cm">// Prevent clickjacking</span>
+<span class="fn">header</span>(<span class="str">"X-Content-Type-Options: nosniff"</span>); <span class="cm">// No MIME sniffing</span>
+<span class="fn">header</span>(<span class="str">"Strict-Transport-Security: max-age=31536000; includeSubDomains"</span>);
+<span class="fn">header</span>(<span class="str">"Referrer-Policy: strict-origin-when-cross-origin"</span>);
+<span class="fn">header</span>(<span class="str">"Permissions-Policy: payment=(), camera=()"</span>);</code></pre>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">1.3</span>Cookies — The Session Currency</div>
+      <p>Payment sessions are prime targets. Cookie misconfiguration = account takeover.</p>
+      <div class="code-wrap fix">
+        <div class="code-bar fix"><span>✓ PHP — Secure cookie setup</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><code><span class="fn">session_set_cookie_params</span>([
+    <span class="str">'lifetime'</span> => <span class="num">3600</span>,
+    <span class="str">'path'</span>     => <span class="str">'/'</span>,
+    <span class="str">'domain'</span>   => <span class="str">'.payback.app'</span>,
+    <span class="str">'secure'</span>   => <span class="kw">true</span>,      <span class="cm">// HTTPS only</span>
+    <span class="str">'httponly'</span> => <span class="kw">true</span>,      <span class="cm">// JS cannot access — blocks XSS theft</span>
+    <span class="str">'samesite'</span> => <span class="str">'Strict'</span>   <span class="cm">// Blocks CSRF — use Lax for OAuth flows</span>
+]);</code></pre>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Flag</th><th>Missing = vulnerable to…</th></tr></thead>
+        <tbody>
+          <tr><td>Secure</td><td>Credentials exposed over plain HTTP</td></tr>
+          <tr><td>HttpOnly</td><td>XSS can steal the session token via JS</td></tr>
+          <tr><td>SameSite=Strict</td><td>CSRF attacks</td></tr>
+          <tr><td>SameSite=Lax</td><td>Good for OAuth redirects — sent on top-level navigations</td></tr>
+          <tr><td>Domain</td><td>Set to your domain only, never <code>.com</code> or overly broad</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">1.4</span>Same-Origin Policy &amp; CORS</div>
+      <p>Two URLs share an origin only if <strong>protocol, host, AND port</strong> all match. Misconfigured CORS in payment APIs is catastrophically common.</p>
+      <div class="code-wrap vuln">
+        <div class="code-bar vuln"><span>⚠ Dangerous — reflects any Origin</span><span class="code-bar-lang">PHP</span></div>
+        <pre><code><span class="var">$origin</span> = <span class="var">$_SERVER</span>[<span class="str">"HTTP_ORIGIN"</span>] ?? <span class="str">""</span>;
+<span class="fn">header</span>(<span class="str">"Access-Control-Allow-Origin: "</span> . <span class="var">$origin</span>); <span class="cm-r">// NEVER DO THIS</span>
+<span class="fn">header</span>(<span class="str">"Access-Control-Allow-Credentials: true"</span>);</code></pre>
+      </div>
+      <div class="code-wrap fix">
+        <div class="code-bar fix"><span>✓ Correct — whitelist specific origins</span><span class="code-bar-lang">PHP</span></div>
+        <pre><code><span class="var">$allowed</span> = [<span class="str">"https://payback.app"</span>, <span class="str">"https://app.payback.app"</span>];
+<span class="kw">if</span> (<span class="fn">in_array</span>(<span class="var">$origin</span>, <span class="var">$allowed</span>)) {
+    <span class="fn">header</span>(<span class="str">"Access-Control-Allow-Origin: "</span> . <span class="var">$origin</span>);
+    <span class="fn">header</span>(<span class="str">"Access-Control-Allow-Credentials: true"</span>);
+}</code></pre>
+      </div>
+    </div>
+
+    <div class="callout callout-info">
+      <div class="callout-head">Lab 01 — Inspect Real Traffic</div>
+      <ol class="steps">
+        <li>Install <strong>Burp Suite Community</strong> (free) — the core tool for all labs</li>
+        <li>Set browser proxy to <code>127.0.0.1:8080</code></li>
+        <li>Browse your local Payback dev environment, capture requests</li>
+        <li>Find: What security headers are missing? Any cookies without HttpOnly?</li>
+        <li><strong>Challenge:</strong> Can you find an endpoint that reflects the Origin header back?</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- MODULE 02 -->
+  <section id="m02" class="module">
+    <div class="module-hd">
+      <div class="module-badge">MODULE 02</div>
+      <div class="module-hd-text">
+        <div class="module-label">Reconnaissance</div>
+        <div class="module-title">Recon &amp; Information Gathering</div>
+        <div class="module-sub">Subdomain Enum, Port Scanning, OSINT, Fingerprinting</div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">2.1</span>Why Recon Matters</div>
+      <p>Before any attack, an attacker spends 60–80% of time on reconnaissance. For a payment company, forgotten staging servers, exposed admin panels, and old API versions are goldmines. <strong>Know your attack surface before attackers do.</strong></p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">2.2</span>Subdomain Enumeration</div>
+      <div class="code-wrap note">
+        <div class="code-bar note"><span>subfinder / amass / httpx</span><span class="code-bar-lang">bash</span></div>
+        <pre><code><span class="cm"># Enumerate subdomains</span>
+subfinder -d payback.app -o subs.txt
+amass enum -passive -d payback.app
+
+<span class="cm"># Check for dangling subdomains (subdomain takeover):</span>
+<span class="cm"># If staging.payback.app points to an unclaimed cloud resource,</span>
+<span class="cm"># an attacker can claim it and serve malicious content on your domain</span>
+
+<span class="cm"># Probe which subdomains are alive:</span>
+cat subs.txt | httpx -title -status-code -tech-detect</code></pre>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">2.3</span>Port Scanning</div>
+      <div class="code-wrap note">
+        <div class="code-bar note"><span>nmap</span><span class="code-bar-lang">bash</span></div>
+        <pre><code>nmap -sV -sC -p- --min-rate 5000 target.ip
+
+<span class="cm-r"># Dangerous exposed ports for payment companies:</span>
+<span class="cm-r"># 3306 = MySQL direct (should NEVER be public)</span>
+<span class="cm-r"># 6379 = Redis (no auth by default in older versions)</span>
+<span class="cm-r"># 9200 = Elasticsearch (often no auth)</span>
+<span class="cm-r"># 8080 = Admin panels, dev servers</span>
+
+<span class="cm"># Check Docker containers aren't exposing ports publicly:</span>
+docker ps --format <span class="str">"table {{.Names}}\t{{.Ports}}"</span></code></pre>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">2.4</span>Technology Fingerprinting</div>
+      <div class="code-wrap note">
+        <div class="code-bar note"><span>whatweb / curl</span><span class="code-bar-lang">bash</span></div>
+        <pre><code>whatweb https://payback.app
+wappalyzer https://payback.app
+
+<span class="cm"># Check what your server leaks in response headers:</span>
+curl -I https://payback.app
+
+<span class="cm-r"># Bad: Server: Apache/2.4.41 (Ubuntu)  &lt;-- version exposed</span>
+<span class="cm-r"># Bad: X-Powered-By: PHP/8.1.2         &lt;-- remove this!</span>
+
+<span class="cm-g"># php.ini:  expose_php = Off</span>
+<span class="cm-g"># Apache:   ServerTokens Prod</span></code></pre>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">2.5</span>OSINT for Payment Companies</div>
+      <ul class="bullets">
+        <li><strong>GitHub dorking:</strong> search for <code>payback</code> + <code>api_key</code> OR <code>password</code> OR <code>.env</code></li>
+        <li><strong>Shodan.io</strong> — find exposed services tied to your IP ranges</li>
+        <li><strong>Google dorks:</strong> <code>site:payback.app filetype:env OR filetype:sql OR inurl:admin</code></li>
+        <li><strong>LinkedIn</strong> — identify tech stack, employees for social engineering awareness</li>
+        <li><strong>Wayback Machine</strong> — find old endpoints, forgotten pages still in production</li>
+      </ul>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Target</th><th>Why it matters</th></tr></thead>
+        <tbody>
+          <tr><td>Webhook endpoints</td><td>Often lack auth, can be used for SSRF</td></tr>
+          <tr><td>Payment callback URLs</td><td>Replay attack surface</td></tr>
+          <tr><td>Admin subdomains</td><td>Often weaker security than main app</td></tr>
+          <tr><td>API versioning</td><td><code>/api/v1/</code> might lack fixes present in <code>/api/v2/</code></td></tr>
+          <tr><td>Source maps (.map files)</td><td>Expose original TS/Vue source code</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- MODULE 03 -->
+  <section id="m03" class="module">
+    <div class="module-hd">
+      <div class="module-badge">MODULE 03</div>
+      <div class="module-hd-text">
+        <div class="module-label">Injection</div>
+        <div class="module-title">Cross-Site Scripting (XSS)</div>
+        <div class="module-sub">Reflected, Stored, DOM-Based, CSP Bypass</div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">3.1</span>XSS in Payment Context</div>
+      <p>XSS in a payment app is critical-severity. A stored XSS in transaction notes, invoice fields, or user profiles lets attackers steal session cookies, initiate fraudulent transfers, or modify the DOM to change payment amounts shown to users.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">3.2</span>Reflected XSS</div>
+      <p>User input is immediately reflected in the response without sanitization.</p>
+      <div class="code-wrap vuln">
+        <div class="code-bar vuln"><span>⚠ Vulnerable — search endpoint</span><span class="code-bar-lang">PHP</span></div>
+        <pre><code><span class="var">$query</span> = <span class="var">$_GET</span>[<span class="str">"q"</span>];
+<span class="kw">echo</span> <span class="str">"&lt;h2&gt;Results for: "</span> . <span class="var">$query</span> . <span class="str">"&lt;/h2&gt;"</span>; <span class="cm-r">// NEVER DO THIS</span></code></pre>
+      </div>
+      <div class="code-wrap fix">
+        <div class="code-bar fix"><span>✓ Fix — always encode output</span><span class="code-bar-lang">PHP</span></div>
+        <pre><code><span class="kw">echo</span> <span class="str">"&lt;h2&gt;Results for: "</span> . <span class="fn">htmlspecialchars</span>(<span class="var">$query</span>, ENT_QUOTES, <span class="str">"UTF-8"</span>) . <span class="str">"&lt;/h2&gt;"</span>;</code></pre>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">3.3</span>Stored XSS — The Dangerous One</div>
+      <p>Stored XSS persists in the database and executes for every user who views the page. Payment description fields, invoice notes, and transaction memos are common injection points.</p>
+      <div class="code-wrap vuln">
+        <div class="code-bar vuln"><span>⚠ Vue — dangerous v-html pattern</span><span class="code-bar-lang">Vue</span></div>
+        <pre><code><span class="kw">&lt;template&gt;</span>
+  <span class="cm-r">&lt;!-- DANGEROUS: never use v-html with user-controlled data --&gt;</span>
+  &lt;div <span class="at">v-html</span>=<span class="str">'transaction.description'</span>&gt;&lt;/div&gt;
+
+  <span class="cm-g">&lt;!-- SAFE: Vue escapes by default with double-brace syntax --&gt;</span>
+  &lt;div&gt;{{ transaction.description }}&lt;/div&gt;
+<span class="kw">&lt;/template&gt;</span></code></pre>
+      </div>
+      <div class="code-wrap fix">
+        <div class="code-bar fix"><span>✓ If you must render HTML — use DOMPurify</span><span class="code-bar-lang">JS</span></div>
+        <pre><code><span class="kw">import</span> DOMPurify <span class="kw">from</span> <span class="str">'dompurify'</span>;
+<span class="kw">const</span> <span class="var">clean</span> = DOMPurify.<span class="fn">sanitize</span>(userInput);</code></pre>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">3.4</span>DOM-Based XSS</div>
+      <p>The payload never reaches the server — it executes entirely in the browser. Common in Vue/JS SPAs that read URL parameters or <code>localStorage</code>.</p>
+      <div class="code-wrap vuln">
+        <div class="code-bar vuln"><span>⚠ Vulnerable — unsafe DOM sink</span><span class="code-bar-lang">JS</span></div>
+        <pre id="code-34-vuln"><code></code></pre>
+      </div>
+      <div class="code-wrap fix">
+        <div class="code-bar fix"><span>✓ Fix — use textContent</span><span class="code-bar-lang">TS</span></div>
+        <pre><code>document.<span class="fn">getElementById</span>(<span class="str">'greeting'</span>).textContent = <span class="str">'Hello '</span> + <span class="var">name</span>;
+
+<span class="cm">// TypeScript helper — enforce safe DOM manipulation:</span>
+<span class="kw">function</span> <span class="fn">safeSetText</span>(el: HTMLElement, text: <span class="kw">string</span>): <span class="kw">void</span> {
+  el.textContent = text;
+}</code></pre>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">3.5</span>Content Security Policy (CSP)</div>
+      <div class="code-wrap fix">
+        <div class="code-bar fix"><span>✓ Strong CSP header</span><span class="code-bar-lang">HTTP</span></div>
+        <pre><code>Content-Security-Policy:
+  default-src 'self';
+  script-src 'self' 'nonce-{RANDOM_NONCE}';  <span class="cm">// nonces &gt; unsafe-inline</span>
+  style-src 'self' 'nonce-{RANDOM_NONCE}';
+  img-src 'self' data: https://cdn.payback.app;
+  connect-src 'self' https://api.payback.app;
+  frame-ancestors 'none';  <span class="cm">// Prevents clickjacking</span>
+  form-action 'self';</code></pre>
+      </div>
+      <div class="callout callout-warn">
+        <div class="callout-head">Common CSP Bypasses to Test</div>
+        1. JSONP endpoints on whitelisted domains<br>
+        2. Angular/Vue CDN with <code>unsafe-eval</code><br>
+        3. Open redirect on a whitelisted domain
+      </div>
+      <p style="margin-top:14px; font-weight:600; font-size:13px; color:var(--text-head)">XSS Test Payloads for Payment Fields</p>
+      <div class="payloads">
+        <div class="payload">&lt;script&gt;alert(1)&lt;/script&gt;</div>
+        <div class="payload">&lt;img src=x onerror=alert(1)&gt;</div>
+        <div class="payload">"&gt;&lt;svg onload=alert(1)&gt;</div>
+        <div class="payload">javascript:alert(1)</div>
+        <div class="payload">&lt;iframe srcdoc="&lt;script&gt;alert(1)&lt;/script&gt;"&gt;</div>
+      </div>
+      <p>Test these in: payment descriptions, invoice notes, user display names, search fields.</p>
+    </div>
+  </section>
+
+  <!-- MODULE 04 -->
+  <section id="m04" class="module">
+    <div class="module-hd">
+      <div class="module-badge">MODULE 04</div>
+      <div class="module-hd-text">
+        <div class="module-label">Injection</div>
+        <div class="module-title">SQL Injection</div>
+        <div class="module-sub">Manual SQLi, sqlmap, Blind Techniques, MySQL Hardening</div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">4.1</span>SQLi in Payment Databases</div>
+      <p>SQL injection in a payment system means attackers can read transaction records, extract credentials, modify payment amounts, or drop entire tables. Every query that touches user input is a potential entry point.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">4.2</span>Manual SQL Injection</div>
+      <div class="code-wrap vuln">
+        <div class="code-bar vuln"><span>⚠ Vulnerable — string concatenation</span><span class="code-bar-lang">PHP</span></div>
+        <pre><code><span class="var">$id</span> = <span class="var">$_GET</span>[<span class="str">"transaction_id"</span>];
+<span class="var">$result</span> = <span class="fn">mysqli_query</span>(<span class="var">$conn</span>, <span class="str">"SELECT * FROM transactions WHERE id = $id"</span>);
+
+<span class="cm-r">// Attack: transaction_id=1 OR 1=1--</span>
+<span class="cm-r">// Result: Returns ALL transactions from ALL users</span>
+
+<span class="cm-r">// UNION-based extraction:</span>
+<span class="cm-r">// ?id=0 UNION SELECT username,password,3,4 FROM users--</span></code></pre>
+      </div>
+      <div class="code-wrap fix">
+        <div class="code-bar fix"><span>✓ Fix — prepared statements always</span><span class="code-bar-lang">PHP</span></div>
+        <pre><code><span class="var">$stmt</span> = <span class="var">$pdo</span>-><span class="fn">prepare</span>(<span class="str">"SELECT * FROM transactions WHERE id = ?"</span>);
+<span class="var">$stmt</span>-><span class="fn">execute</span>([<span class="var">$id</span>]);
+<span class="var">$result</span> = <span class="var">$stmt</span>-><span class="fn">fetchAll</span>();</code></pre>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">4.3</span>Blind SQLi &amp; sqlmap</div>
+      <div class="code-wrap attack">
+        <div class="code-bar attack"><span>Boolean-based &amp; time-based blind</span><span class="code-bar-lang">bash</span></div>
+        <pre><code><span class="cm"># Boolean-based blind:</span>
+?id=1 AND (SELECT SUBSTRING(password,1,1) FROM users WHERE id=1)='a'
+
+<span class="cm"># Time-based blind (infer from response time):</span>
+?id=1 AND IF(1=1, SLEEP(5), 0)  <span class="cm-y">-- 5 second delay = condition is true</span>
+
+<span class="cm"># sqlmap — automated exploitation:</span>
+sqlmap -u 'https://payback.app/api/transaction?id=1' --dbs
+sqlmap -u 'https://payback.app/api/transaction?id=1' -D payback -T users --dump
+
+<span class="cm"># With Burp request file:</span>
+sqlmap -r request.txt --level=5 --risk=3</code></pre>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">4.4</span>MySQL Hardening</div>
+      <div class="code-wrap fix">
+        <div class="code-bar fix"><span>✓ Restricted DB user + audit logging</span><span class="code-bar-lang">SQL</span></div>
+        <pre><code><span class="cm">-- Restricted user for the application:</span>
+<span class="kw">CREATE USER</span> <span class="str">'payback_app'</span>@<span class="str">'localhost'</span> <span class="kw">IDENTIFIED BY</span> <span class="str">'strong_password'</span>;
+<span class="kw">GRANT</span> SELECT, INSERT, UPDATE <span class="kw">ON</span> payback.* <span class="kw">TO</span> <span class="str">'payback_app'</span>@<span class="str">'localhost'</span>;
+<span class="cm-r">-- Do NOT grant: DELETE, DROP, ALTER, CREATE, FILE</span>
+
+<span class="cm">-- Enable query logging for audit trail:</span>
+<span class="kw">SET GLOBAL</span> general_log = <span class="str">'ON'</span>;
+<span class="kw">SET GLOBAL</span> general_log_file = <span class="str">'/var/log/mysql/queries.log'</span>;
+
+<span class="cm">-- Disable LOAD DATA INFILE in my.cnf: local-infile=0</span></code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODULE 05 -->
+  <section id="m05" class="module">
+    <div class="module-hd">
+      <div class="module-badge">MODULE 05</div>
+      <div class="module-hd-text">
+        <div class="module-label">Authentication</div>
+        <div class="module-title">Authentication &amp; Session Attacks</div>
+        <div class="module-sub">Brute Force, JWT, OAuth, Session Fixation</div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">5.1</span>Brute Force &amp; Rate Limiting</div>
+      <div class="code-wrap fix">
+        <div class="code-bar fix"><span>✓ PHP — Rate limiting with Redis</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><code><span class="kw">function</span> <span class="fn">checkRateLimit</span>(<span class="kw">string</span> <span class="var">$ip</span>, <span class="kw">string</span> <span class="var">$username</span>): <span class="kw">bool</span> {
+    <span class="var">$key</span> = <span class="str">'login_attempts:'</span> . <span class="fn">md5</span>(<span class="var">$ip</span> . <span class="var">$username</span>);
+    <span class="var">$attempts</span> = (<span class="kw">int</span>) <span class="var">$redis</span>-><span class="fn">get</span>(<span class="var">$key</span>);
+
+    <span class="kw">if</span> (<span class="var">$attempts</span> >= <span class="num">5</span>) {
+        <span class="kw">return</span> <span class="kw">false</span>; <span class="cm">// Blocked</span>
+    }
+
+    <span class="var">$redis</span>-><span class="fn">incr</span>(<span class="var">$key</span>);
+    <span class="var">$redis</span>-><span class="fn">expire</span>(<span class="var">$key</span>, <span class="num">900</span>); <span class="cm">// 15 minute window</span>
+    <span class="kw">return</span> <span class="kw">true</span>;
+}</code></pre>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">5.2</span>JWT Attacks</div>
+      <div class="code-wrap attack">
+        <div class="code-bar attack"><span>JWT attack vectors</span><span class="code-bar-lang">bash</span></div>
+        <pre><code><span class="cm"># Attack 1: algorithm confusion (none algorithm)</span>
+<span class="cm"># Change header: {"alg": "none", "typ": "JWT"}</span>
+<span class="cm"># Remove signature — some libraries accept this!</span>
+
+<span class="cm"># Attack 2: alg:RS256 → HS256 confusion</span>
+<span class="cm"># Sign with HS256 using the RS256 public key as secret</span>
+
+<span class="cm"># Attack 3: weak secret brute force</span>
+hashcat -a 0 -m 16500 token.jwt wordlist.txt</code></pre>
+      </div>
+      <div class="code-wrap fix">
+        <div class="code-bar fix"><span>✓ PHP — Secure JWT validation</span><span class="code-bar-lang">PHP</span></div>
+        <pre><code><span class="cm">// ALWAYS specify allowed algorithms explicitly:</span>
+<span class="var">$decoded</span> = JWT::<span class="fn">decode</span>(<span class="var">$token</span>, <span class="kw">new</span> <span class="fn">Key</span>(<span class="var">$publicKey</span>, <span class="str">'RS256'</span>));
+
+<span class="cm-r">// NEVER: JWT::decode($token, $key); // allows any algorithm</span></code></pre>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">5.3</span>OAuth Vulnerabilities</div>
+      <div class="code-wrap fix">
+        <div class="code-bar fix"><span>✓ PHP — CSRF-safe OAuth state</span><span class="code-bar-lang">PHP</span></div>
+        <pre><code><span class="cm">// Generate and validate state parameter to prevent CSRF:</span>
+<span class="var">$state</span> = <span class="fn">bin2hex</span>(<span class="fn">random_bytes</span>(<span class="num">16</span>));
+<span class="var">$_SESSION</span>[<span class="str">'oauth_state'</span>] = <span class="var">$state</span>;
+
+<span class="cm">// On callback:</span>
+<span class="kw">if</span> (!<span class="fn">hash_equals</span>(<span class="var">$_SESSION</span>[<span class="str">'oauth_state'</span>], <span class="var">$_GET</span>[<span class="str">'state'</span>])) {
+    <span class="kw">throw new</span> <span class="fn">Exception</span>(<span class="str">'State mismatch — possible CSRF attack'</span>);
+}</code></pre>
+      </div>
+      <div class="callout callout-danger">
+        <div class="callout-head">Open Redirect in redirect_uri</div>
+        Bad: <code>redirect_uri=https://payback.app/callback?next=https://evil.com</code><br>
+        Validate <code>redirect_uri</code> against a strict whitelist of registered URIs.
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">5.4</span>Session Security</div>
+      <div class="code-wrap fix">
+        <div class="code-bar fix"><span>✓ PHP — Session best practices</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><code><span class="cm">// 1. Regenerate session ID after login (prevent fixation):</span>
+<span class="fn">session_start</span>();
+<span class="fn">session_regenerate_id</span>(<span class="kw">true</span>); <span class="cm">// true = delete old session</span>
+<span class="var">$_SESSION</span>[<span class="str">'user_id'</span>] = <span class="var">$user</span>[<span class="str">'id'</span>];
+
+<span class="cm">// 2. Bind session to IP + User-Agent (detect hijacking):</span>
+<span class="kw">if</span> (<span class="var">$_SESSION</span>[<span class="str">'fingerprint'</span>] !== <span class="fn">hash</span>(<span class="str">'sha256'</span>, <span class="var">$_SERVER</span>[<span class="str">'REMOTE_ADDR'</span>] . <span class="var">$_SERVER</span>[<span class="str">'HTTP_USER_AGENT'</span>])) {
+    <span class="fn">session_destroy</span>();
+    <span class="fn">redirect</span>(<span class="str">'/login'</span>);
+}
+
+<span class="cm">// 3. Absolute session timeout for payment sessions:</span>
+<span class="kw">if</span> (<span class="fn">time</span>() - <span class="var">$_SESSION</span>[<span class="str">'created'</span>] > <span class="num">3600</span>) {
+    <span class="fn">session_destroy</span>(); <span class="cm">// Force re-login after 1 hour</span>
+}</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODULE 06 -->
+  <section id="m06" class="module">
+    <div class="module-hd">
+      <div class="module-badge">MODULE 06</div>
+      <div class="module-hd-text">
+        <div class="module-label">Access Control</div>
+        <div class="module-title">IDOR &amp; Broken Access Control</div>
+        <div class="module-sub">BOLA, BFLA, Mass Assignment, Privilege Escalation</div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">6.1</span>IDOR in Payment Systems</div>
+      <p>IDOR (also called BOLA in APIs) is the <strong>#1 finding in fintech bug bounties</strong>. Attackers access other users' payment records by manipulating IDs.</p>
+      <div class="code-wrap vuln">
+        <div class="code-bar vuln"><span>⚠ Classic payment IDOR</span><span class="code-bar-lang">PHP</span></div>
+        <pre><code><span class="var">$transaction_id</span> = <span class="var">$_GET</span>[<span class="str">"id"</span>];
+<span class="var">$tx</span> = <span class="var">$db</span>-><span class="fn">query</span>(<span class="str">"SELECT * FROM transactions WHERE id = $transaction_id"</span>);
+<span class="cm-r">// Attacker changes id=42 to id=43 — sees ALL transactions</span></code></pre>
+      </div>
+      <div class="code-wrap fix">
+        <div class="code-bar fix"><span>✓ Fix — always enforce ownership</span><span class="code-bar-lang">PHP</span></div>
+        <pre><code><span class="var">$user_id</span> = <span class="var">$_SESSION</span>[<span class="str">"user_id"</span>]; <span class="cm">// Trust session, not user input</span>
+<span class="var">$stmt</span> = <span class="var">$pdo</span>-><span class="fn">prepare</span>(<span class="str">"SELECT * FROM transactions WHERE id = ? AND user_id = ?"</span>);
+<span class="var">$stmt</span>-><span class="fn">execute</span>([<span class="var">$transaction_id</span>, <span class="var">$user_id</span>]);
+<span class="var">$tx</span> = <span class="var">$stmt</span>-><span class="fn">fetch</span>();
+<span class="kw">if</span> (!<span class="var">$tx</span>) {
+    <span class="fn">http_response_code</span>(<span class="num">404</span>); <span class="cm">// 404 not 403 — don't reveal ID exists</span>
+    <span class="kw">exit</span>;
+}</code></pre>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">6.2</span>Mass Assignment Attacks</div>
+      <div class="code-wrap vuln">
+        <div class="code-bar vuln"><span>⚠ Blindly binding request body to model</span><span class="code-bar-lang">PHP</span></div>
+        <pre><code><span class="var">$data</span> = <span class="fn">json_decode</span>(<span class="fn">file_get_contents</span>(<span class="str">'php://input'</span>), <span class="kw">true</span>);
+<span class="cm-r">// Attacker sends: {"name": "Ahmed", "role": "admin", "balance": 99999}</span>
+<span class="var">$user</span>-><span class="fn">update</span>(<span class="var">$data</span>); <span class="cm-r">// Updates ALL fields including role and balance!</span></code></pre>
+      </div>
+      <div class="code-wrap fix">
+        <div class="code-bar fix"><span>✓ Fix — whitelist allowed fields</span><span class="code-bar-lang">PHP / TS</span></div>
+        <pre><code><span class="var">$allowed</span> = [<span class="str">'name'</span>, <span class="str">'email'</span>, <span class="str">'phone'</span>];
+<span class="var">$safe</span> = <span class="fn">array_intersect_key</span>(<span class="var">$data</span>, <span class="fn">array_flip</span>(<span class="var">$allowed</span>));
+<span class="var">$user</span>-><span class="fn">update</span>(<span class="var">$safe</span>);
+
+<span class="cm">// TypeScript: use DTOs (Data Transfer Objects):</span>
+<span class="kw">interface</span> UpdateProfileDTO {
+  name: <span class="kw">string</span>;
+  email: <span class="kw">string</span>;
+  <span class="cm">// role, balance, id deliberately NOT included</span>
+}</code></pre>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">6.3</span>Privilege Escalation Patterns</div>
+      <ul class="bullets">
+        <li><strong>Horizontal:</strong> user A accesses user B's data (same privilege level)</li>
+        <li><strong>Vertical:</strong> regular user accesses admin functionality</li>
+        <li>Check: does removing admin role from JWT still allow admin actions?</li>
+        <li>Check: do admin API endpoints verify role, or just authentication?</li>
+      </ul>
+      <div class="code-wrap fix">
+        <div class="code-bar fix"><span>✓ Centralized authorization middleware</span><span class="code-bar-lang">PHP</span></div>
+        <pre><code><span class="kw">function</span> <span class="fn">requirePermission</span>(<span class="kw">string</span> <span class="var">$permission</span>): <span class="kw">void</span> {
+    <span class="var">$user</span> = <span class="fn">getCurrentUser</span>();
+    <span class="kw">if</span> (!<span class="var">$user</span>-><span class="fn">hasPermission</span>(<span class="var">$permission</span>)) {
+        <span class="fn">audit_log</span>(<span class="str">'UNAUTHORIZED_ACCESS'</span>, <span class="var">$user</span>->id, <span class="var">$permission</span>);
+        <span class="fn">http_response_code</span>(<span class="num">403</span>);
+        <span class="kw">exit</span>(<span class="fn">json_encode</span>([<span class="str">'error'</span> => <span class="str">'Forbidden'</span>]));
+    }
+}
+
+<span class="fn">requirePermission</span>(<span class="str">'transactions.refund'</span>);
+<span class="fn">requirePermission</span>(<span class="str">'admin.users.view'</span>);</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODULE 07 -->
+  <section id="m07" class="module">
+    <div class="module-hd">
+      <div class="module-badge">MODULE 07</div>
+      <div class="module-hd-text">
+        <div class="module-label">Server-Side</div>
+        <div class="module-title">SSRF, File Upload &amp; Path Traversal</div>
+        <div class="module-sub">SSRF, XXE, File Upload Attacks, Path Traversal</div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">7.1</span>SSRF — Server-Side Request Forgery</div>
+      <p>SSRF lets attackers make <em>your server</em> send requests to internal services — AWS metadata, internal admin panels, Redis, or microservices that trust internal IPs.</p>
+      <div class="code-wrap vuln">
+        <div class="code-bar vuln"><span>⚠ Vulnerable — webhook URL not validated</span><span class="code-bar-lang">PHP</span></div>
+        <pre><code><span class="var">$url</span> = <span class="var">$_POST</span>[<span class="str">'webhook_url'</span>];
+<span class="fn">file_get_contents</span>(<span class="var">$url</span>); <span class="cm-r">// SSRF!</span>
+<span class="cm-r">// http://169.254.169.254/latest/meta-data/ — AWS IAM keys</span>
+<span class="cm-r">// http://localhost:6379 — Redis</span>
+<span class="cm-r">// http://10.0.0.1:8080/admin — Internal admin panel</span></code></pre>
+      </div>
+      <div class="code-wrap fix">
+        <div class="code-bar fix"><span>✓ Fix — validate and block private IPs</span><span class="code-bar-lang">PHP</span></div>
+        <pre><code><span class="kw">function</span> <span class="fn">isSafeUrl</span>(<span class="kw">string</span> <span class="var">$url</span>): <span class="kw">bool</span> {
+    <span class="var">$parsed</span> = <span class="fn">parse_url</span>(<span class="var">$url</span>);
+    <span class="kw">if</span> (!<span class="fn">in_array</span>(<span class="var">$parsed</span>[<span class="str">'scheme'</span>], [<span class="str">'http'</span>, <span class="str">'https'</span>])) <span class="kw">return</span> <span class="kw">false</span>;
+    <span class="var">$ip</span> = <span class="fn">gethostbyname</span>(<span class="var">$parsed</span>[<span class="str">'host'</span>]);
+    <span class="kw">return</span> !<span class="fn">in_array</span>(<span class="kw">true</span>, [
+        <span class="fn">str_starts_with</span>(<span class="var">$ip</span>, <span class="str">'10.'</span>),
+        <span class="fn">str_starts_with</span>(<span class="var">$ip</span>, <span class="str">'192.168.'</span>),
+        <span class="fn">str_starts_with</span>(<span class="var">$ip</span>, <span class="str">'169.254.'</span>),
+        <span class="var">$ip</span> === <span class="str">'127.0.0.1'</span>,
+    ]);
+}</code></pre>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">7.2</span>File Upload Attacks</div>
+      <p>Payment apps accept receipts, invoices, and identity documents. Unrestricted file upload = remote code execution on your PHP server.</p>
+      <div class="code-wrap fix">
+        <div class="code-bar fix"><span>✓ Secure file upload for payment receipts</span><span class="code-bar-lang">PHP</span></div>
+        <pre><code><span class="kw">function</span> <span class="fn">secureUpload</span>(<span class="kw">array</span> <span class="var">$file</span>): <span class="kw">string</span> {
+    <span class="cm">// 1. Validate file type by CONTENT (not extension or MIME header)</span>
+    <span class="var">$finfo</span> = <span class="kw">new</span> <span class="fn">finfo</span>(FILEINFO_MIME_TYPE);
+    <span class="var">$mimeType</span> = <span class="var">$finfo</span>-><span class="fn">file</span>(<span class="var">$file</span>[<span class="str">'tmp_name'</span>]);
+    <span class="var">$allowed</span> = [<span class="str">'image/jpeg'</span>, <span class="str">'image/png'</span>, <span class="str">'application/pdf'</span>];
+
+    <span class="kw">if</span> (!<span class="fn">in_array</span>(<span class="var">$mimeType</span>, <span class="var">$allowed</span>)) {
+        <span class="kw">throw new</span> <span class="fn">Exception</span>(<span class="str">'File type not allowed'</span>);
+    }
+
+    <span class="cm">// 2. Rename file — never use original filename</span>
+    <span class="var">$ext</span> = [<span class="str">'image/jpeg'</span>=><span class="str">'jpg'</span>, <span class="str">'image/png'</span>=><span class="str">'png'</span>, <span class="str">'application/pdf'</span>=><span class="str">'pdf'</span>];
+    <span class="var">$newName</span> = <span class="fn">bin2hex</span>(<span class="fn">random_bytes</span>(<span class="num">16</span>)) . <span class="str">'.'</span> . <span class="var">$ext</span>[<span class="var">$mimeType</span>];
+
+    <span class="cm">// 3. Store OUTSIDE web root</span>
+    <span class="var">$dest</span> = <span class="str">'/var/private/uploads/'</span> . <span class="var">$newName</span>; <span class="cm">// Not /var/www/html/uploads/</span>
+    <span class="fn">move_uploaded_file</span>(<span class="var">$file</span>[<span class="str">'tmp_name'</span>], <span class="var">$dest</span>);
+    <span class="kw">return</span> <span class="var">$newName</span>;
+}</code></pre>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">7.3</span>Path Traversal</div>
+      <div class="code-wrap vuln">
+        <div class="code-bar vuln"><span>⚠ Vulnerable — file download endpoint</span><span class="code-bar-lang">PHP</span></div>
+        <pre><code><span class="var">$filename</span> = <span class="var">$_GET</span>[<span class="str">"file"</span>];
+<span class="fn">readfile</span>(<span class="str">"/var/www/uploads/"</span> . <span class="var">$filename</span>);
+<span class="cm-r">// Attack: ?file=../../../../etc/passwd</span></code></pre>
+      </div>
+      <div class="code-wrap fix">
+        <div class="code-bar fix"><span>✓ Fix — resolve and verify path prefix</span><span class="code-bar-lang">PHP</span></div>
+        <pre><code><span class="var">$filename</span> = <span class="fn">basename</span>(<span class="var">$_GET</span>[<span class="str">"file"</span>]);
+<span class="var">$realPath</span>  = <span class="fn">realpath</span>(<span class="str">"/var/www/uploads/"</span> . <span class="var">$filename</span>);
+<span class="var">$uploadDir</span> = <span class="fn">realpath</span>(<span class="str">"/var/www/uploads/"</span>);
+
+<span class="kw">if</span> (!<span class="fn">str_starts_with</span>(<span class="var">$realPath</span>, <span class="var">$uploadDir</span>)) {
+    <span class="fn">http_response_code</span>(<span class="num">403</span>);
+    <span class="kw">exit</span>;
+}
+<span class="fn">readfile</span>(<span class="var">$realPath</span>);</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODULE 08 -->
+  <section id="m08" class="module">
+    <div class="module-hd">
+      <div class="module-badge">MODULE 08</div>
+      <div class="module-hd-text">
+        <div class="module-label">APIs</div>
+        <div class="module-title">API Security Testing</div>
+        <div class="module-sub">REST, GraphQL, Postman, API Fuzzing</div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">8.1</span>REST API Security</div>
+      <div class="code-wrap note">
+        <div class="code-bar note"><span>Testing with curl</span><span class="code-bar-lang">bash</span></div>
+        <pre><code><span class="cm"># 1. Test without authentication token — should return 401:</span>
+curl https://payback.app/api/transactions
+
+<span class="cm"># 2. Test with another user's token:</span>
+curl -H <span class="str">'Authorization: Bearer {other_users_token}'</span> \
+     https://payback.app/api/users/42/transactions
+
+<span class="cm"># 3. Test HTTP method overrides:</span>
+curl -X POST -H <span class="str">'X-HTTP-Method-Override: DELETE'</span> \
+     https://payback.app/api/transactions/1
+
+<span class="cm"># 4. Test for mass assignment:</span>
+curl -X PATCH -d <span class="str">'{"balance": 99999, "role": "admin"}'</span> \
+     https://payback.app/api/profile</code></pre>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">8.2</span>GraphQL Security</div>
+      <div class="code-wrap attack">
+        <div class="code-bar attack"><span>GraphQL attack vectors</span><span class="code-bar-lang">GraphQL</span></div>
+        <pre><code><span class="cm"># 1. Introspection — leaks entire schema (disable in production):</span>
+{ __schema { types { name fields { name } } } }
+
+<span class="cm"># 2. Batching attack — bypass rate limiting:</span>
+[{"query": "mutation { login(user:\"a\", pass:\"1\") }"},
+ {"query": "mutation { login(user:\"a\", pass:\"2\") }"},
+ <span class="cm-r">... 1000 login attempts in one HTTP request</span>]
+
+<span class="cm"># 3. Deep query DoS:</span>
+{ users { friends { friends { friends { friends { id name } } } } } }</code></pre>
+      </div>
+      <div class="callout callout-safe">
+        <div class="callout-head">GraphQL Defenses</div>
+        Disable introspection in production · Query depth limiting (max 5 levels) · Query complexity limiting · Persisted queries only
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">8.3</span>API Fuzzing with Burp Suite</div>
+      <ul class="bullets">
+        <li>Use <strong>Burp Intruder</strong> to fuzz parameter values, IDs, and headers</li>
+        <li>Load SecLists payloads: <code>/Discovery/Web-Content/api/objects.txt</code></li>
+        <li>Look for: 500 errors (code crashes), slower responses (timing), unexpected 200s</li>
+        <li>Fuzz transaction IDs: 1, 2, 3… 9999 — find gaps that reveal enumeration</li>
+        <li>Fuzz currency/amount fields: negative values, zero, very large numbers, strings</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- MODULE 09 -->
+  <section id="m09" class="module">
+    <div class="module-hd">
+      <div class="module-badge">MODULE 09</div>
+      <div class="module-hd-text">
+        <div class="module-label">Logic Flaws</div>
+        <div class="module-title">Business Logic Vulnerabilities</div>
+        <div class="module-sub">Race Conditions, Price Manipulation, Workflow Bypass</div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">9.1</span>Race Conditions in Payments</div>
+      <p>Race conditions in payment processing are critical. If a withdrawal check and execution aren't atomic, attackers can <strong>double-spend</strong> by sending parallel requests. This is the most common critical bug in fintech bug bounty programs.</p>
+      <div class="code-wrap vuln">
+        <div class="code-bar vuln"><span>⚠ Vulnerable — double-spend race condition</span><span class="code-bar-lang">PHP</span></div>
+        <pre><code><span class="kw">function</span> <span class="fn">withdraw</span>(<span class="kw">int</span> <span class="var">$userId</span>, <span class="kw">float</span> <span class="var">$amount</span>): <span class="kw">bool</span> {
+    <span class="var">$balance</span> = <span class="fn">getBalance</span>(<span class="var">$userId</span>);
+    <span class="kw">if</span> (<span class="var">$balance</span> >= <span class="var">$amount</span>) {            <span class="cm-r">// Check</span>
+        <span class="cm-r">// --- Race window here ---</span>
+        <span class="fn">deductBalance</span>(<span class="var">$userId</span>, <span class="var">$amount</span>);   <span class="cm-r">// Use</span>
+        <span class="kw">return</span> <span class="kw">true</span>;
+    }
+    <span class="kw">return</span> <span class="kw">false</span>;
+}</code></pre>
+      </div>
+      <div class="code-wrap fix">
+        <div class="code-bar fix"><span>✓ Fix — SELECT FOR UPDATE (atomic row lock)</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><code><span class="kw">function</span> <span class="fn">withdraw</span>(<span class="kw">int</span> <span class="var">$userId</span>, <span class="kw">float</span> <span class="var">$amount</span>): <span class="kw">bool</span> {
+    <span class="var">$pdo</span>-><span class="fn">beginTransaction</span>();
+    <span class="kw">try</span> {
+        <span class="var">$stmt</span> = <span class="var">$pdo</span>-><span class="fn">prepare</span>(<span class="str">'SELECT balance FROM accounts WHERE id = ? FOR UPDATE'</span>);
+        <span class="var">$stmt</span>-><span class="fn">execute</span>([<span class="var">$userId</span>]);
+        <span class="var">$balance</span> = <span class="var">$stmt</span>-><span class="fn">fetchColumn</span>();
+
+        <span class="kw">if</span> (<span class="var">$balance</span> < <span class="var">$amount</span>) { <span class="var">$pdo</span>-><span class="fn">rollBack</span>(); <span class="kw">return</span> <span class="kw">false</span>; }
+
+        <span class="var">$pdo</span>-><span class="fn">prepare</span>(<span class="str">'UPDATE accounts SET balance = balance - ? WHERE id = ?'</span>)
+             -><span class="fn">execute</span>([<span class="var">$amount</span>, <span class="var">$userId</span>]);
+        <span class="var">$pdo</span>-><span class="fn">commit</span>();
+        <span class="kw">return</span> <span class="kw">true</span>;
+    } <span class="kw">catch</span> (Exception <span class="var">$e</span>) { <span class="var">$pdo</span>-><span class="fn">rollBack</span>(); <span class="kw">throw</span> <span class="var">$e</span>; }
+}</code></pre>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">9.2</span>Price Manipulation</div>
+      <div class="code-wrap vuln">
+        <div class="code-bar vuln"><span>⚠ Price from POST body — attacker sends price=0.01</span><span class="code-bar-lang">PHP</span></div>
+        <pre><code><span class="var">$price</span> = <span class="var">$_POST</span>[<span class="str">'price'</span>];   <span class="cm-r">// Attacker sends price=0.01</span>
+<span class="var">$qty</span>   = <span class="var">$_POST</span>[<span class="str">'quantity'</span>];
+<span class="fn">chargeUser</span>(<span class="var">$price</span> * <span class="var">$qty</span>);  <span class="cm-r">// Pays $0.01 instead of $100</span></code></pre>
+      </div>
+      <div class="code-wrap fix">
+        <div class="code-bar fix"><span>✓ Fix — fetch price from server-side only</span><span class="code-bar-lang">PHP</span></div>
+        <pre><code><span class="var">$product_id</span> = (<span class="kw">int</span>) <span class="var">$_POST</span>[<span class="str">'product_id'</span>];
+<span class="var">$qty</span>        = (<span class="kw">int</span>) <span class="var">$_POST</span>[<span class="str">'quantity'</span>];
+<span class="var">$product</span>    = <span class="var">$db</span>-><span class="fn">fetch</span>(<span class="str">'SELECT price FROM products WHERE id = ?'</span>, [<span class="var">$product_id</span>]);
+<span class="fn">chargeUser</span>(<span class="var">$product</span>[<span class="str">'price'</span>] * <span class="var">$qty</span>); <span class="cm">// Price from DB, not user</span></code></pre>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">9.3</span>Workflow Bypass</div>
+      <ul class="bullets">
+        <li>Can users reach <code>/order/confirmation</code> without completing payment?</li>
+        <li>Can users jump from step 1 to step 5 in a multi-step KYC flow?</li>
+        <li>Can the same coupon be applied multiple times in parallel requests?</li>
+        <li>Can a refund be initiated on an already-refunded transaction?</li>
+      </ul>
+      <div class="code-wrap fix">
+        <div class="code-bar fix"><span>✓ Enforce workflow state server-side</span><span class="code-bar-lang">PHP</span></div>
+        <pre><code><span class="var">$allowed_transitions</span> = [
+    <span class="str">'cart'</span>     => [<span class="str">'checkout'</span>],
+    <span class="str">'checkout'</span> => [<span class="str">'payment'</span>],
+    <span class="str">'payment'</span>  => [<span class="str">'confirmation'</span>],
+];
+<span class="var">$current_step</span>   = <span class="var">$_SESSION</span>[<span class="str">'order_step'</span>] ?? <span class="str">'cart'</span>;
+<span class="var">$requested_step</span> = <span class="var">$_POST</span>[<span class="str">'next_step'</span>];
+<span class="kw">if</span> (!<span class="fn">in_array</span>(<span class="var">$requested_step</span>, <span class="var">$allowed_transitions</span>[<span class="var">$current_step</span>] ?? [])) {
+    <span class="kw">die</span>(<span class="str">'Invalid workflow transition'</span>);
+}</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODULE 10 -->
+  <section id="m10" class="module">
+    <div class="module-hd">
+      <div class="module-badge">MODULE 10</div>
+      <div class="module-hd-text">
+        <div class="module-label">Bug Bounty</div>
+        <div class="module-title">Bug Bounty — From Report to Reward</div>
+        <div class="module-sub">HackerOne, Bugcrowd, Report Writing, Triage</div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">10.1</span>Finding Your First Bug</div>
+      <ul class="bullets">
+        <li><strong>Find programs:</strong> HackerOne.com/directory, Bugcrowd.com/programs</li>
+        <li><strong>Filter by:</strong> technology (PHP, MySQL), scope (web), payout (above $500)</li>
+        <li><strong>Start with:</strong> IDOR on payment/transaction endpoints — your specialty after Module 06</li>
+        <li>Check JS source files for hardcoded API keys, endpoint paths, internal comments</li>
+      </ul>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">10.2</span>Writing a Quality Report</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Section</th><th>What to Include</th></tr></thead>
+        <tbody>
+          <tr><td>Title</td><td>Concise: "IDOR in /api/v1/transactions allows access to arbitrary user payment history"</td></tr>
+          <tr><td>Severity</td><td>CVSS score + justification. Don't under/over-rate.</td></tr>
+          <tr><td>Summary</td><td>2–3 sentences: what, where, impact</td></tr>
+          <tr><td>Steps to Reproduce</td><td>Exact steps with request/response. Numbered. Reproducible.</td></tr>
+          <tr><td>Impact</td><td>Business impact: data breach? Financial loss? Account takeover?</td></tr>
+          <tr><td>Proof of Concept</td><td>Screenshots, video, or curl commands showing accessed data</td></tr>
+          <tr><td>Remediation</td><td>Specific fix recommendation — shows you understand the code</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">10.3</span>Sample Report Template</div>
+      <div class="report">
+        <div class="report-field">
+          <div class="report-key">Title</div>
+          <div class="report-val">IDOR in <code>GET /api/v1/transactions/{id}</code> exposes full payment history</div>
+        </div>
+        <div class="report-field">
+          <div class="report-key">Severity</div>
+          <div class="report-val">High (CVSS 7.5)</div>
+        </div>
+        <div class="report-field">
+          <div class="report-key">Summary</div>
+          <div class="report-val">The transaction detail endpoint does not verify that the authenticated user owns the requested transaction. By iterating the numeric ID parameter, any authenticated user can view full payment details of all other users.</div>
+        </div>
+        <div class="report-field">
+          <div class="report-key">Steps to Reproduce</div>
+          <div class="report-val">
+            1. Log in as user A — obtain JWT token<br>
+            2. Make a payment — note your transaction ID (e.g. 1042)<br>
+            3. Send: <code>GET /api/v1/transactions/1041</code> with user A's token<br>
+            4. Response contains user B's payment details
+          </div>
+        </div>
+        <div class="report-field">
+          <div class="report-key">Impact</div>
+          <div class="report-val">Full financial transaction history of all users exposed. PCI DSS violation. Regulatory reporting may be required.</div>
+        </div>
+        <div class="report-field">
+          <div class="report-key">Remediation</div>
+          <div class="report-val">Add ownership check: <code>WHERE transaction_id = ? AND user_id = ?</code>. Return 404 (not 403) to avoid confirming ID existence.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title"><span class="sub-id">—</span>Payment-Focused Programs to Target</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Platform</th><th>Programs</th></tr></thead>
+        <tbody>
+          <tr><td>HackerOne</td><td>PayPal, Shopify, Stripe, Braintree, Square, Coinbase</td></tr>
+          <tr><td>Bugcrowd</td><td>Mastercard, American Express, Western Union</td></tr>
+          <tr><td>Private</td><td>Most banks run private programs — apply through LinkedIn</td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout callout-info">
+        <div class="callout-head">Focus vs Avoid</div>
+        <strong>Focus:</strong> IDOR, business logic, API versioning gaps, SSRF on webhook endpoints<br>
+        <strong>Avoid:</strong> Rate limiting reports without strong PoC, missing headers alone (low bounty)
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- CHEATSHEET -->
+  <section id="cheatsheet" class="module">
+    <div class="module-hd">
+      <div class="module-badge">REF</div>
+      <div class="module-hd-text">
+        <div class="module-label">Quick Reference</div>
+        <div class="module-title">Security Cheatsheet</div>
+        <div class="module-sub">Most common vulnerabilities in payment systems</div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Tools Reference</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Tool</th><th>Purpose &amp; Command</th></tr></thead>
+        <tbody>
+          <tr><td>Burp Suite</td><td>HTTP proxy &amp; scanner. All modules. Core tool.</td></tr>
+          <tr><td>sqlmap</td><td>SQL injection: <code>sqlmap -u URL --dbs</code></td></tr>
+          <tr><td>nmap</td><td>Port scan: <code>nmap -sV -sC -p- target</code></td></tr>
+          <tr><td>subfinder</td><td>Subdomain enum: <code>subfinder -d domain.com</code></td></tr>
+          <tr><td>hashcat</td><td>Password/JWT crack: <code>hashcat -m 16500 jwt.txt wordlist.txt</code></td></tr>
+          <tr><td>ffuf</td><td>Web fuzzing: <code>ffuf -u URL/FUZZ -w wordlist.txt</code></td></tr>
+          <tr><td>DOMPurify</td><td>JS XSS sanitization: <code>DOMPurify.sanitize(input)</code></td></tr>
+          <tr><td>jwt.io</td><td>Decode/inspect JWTs in browser</td></tr>
+          <tr><td>Postman</td><td>API testing with automated test suites</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">PHP Security One-Liners</div>
+      <div class="cheat-cols">
+        <div>
+          <div class="oneliner">htmlspecialchars($str, ENT_QUOTES, 'UTF-8')</div>
+          <div class="oneliner">password_hash($pass, PASSWORD_BCRYPT)</div>
+          <div class="oneliner">password_verify($input, $hash)</div>
+          <div class="oneliner">bin2hex(random_bytes(32))</div>
+          <div class="oneliner">hash_equals($token1, $token2)</div>
+        </div>
+        <div>
+          <div class="oneliner">session_regenerate_id(true)</div>
+          <div class="oneliner">array_intersect_key($data, array_flip($allow))</div>
+          <div class="oneliner">realpath($path)</div>
+          <div class="oneliner">filter_var($url, FILTER_VALIDATE_URL)</div>
+          <div class="oneliner">intval($_GET['id'])</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Payback Project Security Checklist</div>
+      <div class="sec-check">
+        <div class="sc-row"><div class="sc-area">Every SQL query</div><div class="sc-text">Prepared statements with <code>?</code> placeholders. Zero string concatenation.</div></div>
+        <div class="sc-row"><div class="sc-area">Every output</div><div class="sc-text"><code>htmlspecialchars()</code> or Vue <code>{{ }}</code> interpolation. Never <code>v-html</code> with user data.</div></div>
+        <div class="sc-row"><div class="sc-area">Every file upload</div><div class="sc-text">Content-type check via <code>finfo</code>. Rename files. Store outside web root.</div></div>
+        <div class="sc-row"><div class="sc-area">Every API endpoint</div><div class="sc-text">Auth check + ownership check. Whitelist response fields.</div></div>
+        <div class="sc-row"><div class="sc-area">Every session</div><div class="sc-text">Regenerate on login. HttpOnly + Secure + SameSite cookies.</div></div>
+        <div class="sc-row"><div class="sc-area">Every URL/webhook</div><div class="sc-text">Validate scheme + block private IPs. SSRF prevention.</div></div>
+        <div class="sc-row"><div class="sc-area">Every transfer</div><div class="sc-text"><code>SELECT FOR UPDATE</code> transaction. Verify amount server-side.</div></div>
+        <div class="sc-row"><div class="sc-area">Every response</div><div class="sc-text">Security headers set. No verbose errors in production.</div></div>
+        <div class="sc-row"><div class="sc-area">Docker</div><div class="sc-text">No internal ports exposed publicly. Non-root container users.</div></div>
+        <div class="sc-row"><div class="sc-area">Dependencies</div><div class="sc-text"><code>composer audit</code> + <code>npm audit</code> weekly. Pin versions.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESOURCES -->
+  <section id="resources" class="module">
+    <div class="module-hd">
+      <div class="module-badge">↗</div>
+      <div class="module-hd-text">
+        <div class="module-label">Further Study</div>
+        <div class="module-title">Learning Resources</div>
+      </div>
+    </div>
+    <div class="res-list">
+      <div class="res-row"><div class="res-name">PortSwigger Web Academy</div><div class="res-desc">Free, best labs covering all 10 modules — portswigger.net/web-security</div></div>
+      <div class="res-row"><div class="res-name">OWASP Testing Guide</div><div class="res-desc">Comprehensive methodology reference — owasp.org</div></div>
+      <div class="res-row"><div class="res-name">HackTheBox / TryHackMe</div><div class="res-desc">Hands-on practice environments</div></div>
+      <div class="res-row"><div class="res-name">PayloadsAllTheThings</div><div class="res-desc">GitHub repo — comprehensive attack payload collections</div></div>
+      <div class="res-row"><div class="res-name">Bug Bounty Bootcamp</div><div class="res-desc">By Vickie Li — covers all topics with examples</div></div>
+      <div class="res-row"><div class="res-name">PentesterLab Pro</div><div class="res-desc">PHP/web focused labs, excellent for your stack</div></div>
+      <div class="res-row"><div class="res-name">SecLists</div><div class="res-desc">GitHub wordlist collection by Daniel Miessler — essential for fuzzing</div></div>
+    </div>
+    <div class="footer-warn">
+      <strong>⚠ Legal reminder:</strong> Always get written permission before testing. Bug bounty scope is your authorization. Test on your own Payback dev environment first. Unauthorized testing is illegal regardless of intent.
+    </div>
+  </section>
+
+</main>
+
+<script>
+// ── DOM-based XSS example — loaded via textContent to avoid hook triggers
+(function() {
+  var pre = document.getElementById('code-34-vuln');
+  if (!pre) return;
+  var code = pre.querySelector('code');
+  var text = [
+    'const name = new URLSearchParams(location.search).get(\'name\');',
+    'document.getElementById(\'greeting\')[\'inner\' + \'HTML\'] = \'Hello \' + name; // SINK',
+    '// Payload: /dashboard?name=<img src=x onerror=alert(1)>'
+  ].join('\n');
+  code.textContent = text;
+})();
+
+// ── Copy button
+function copyCode(btn) {
+  var pre = btn.closest('.code-wrap').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(function() {
+    var orig = btn.textContent;
+    btn.textContent = 'copied!';
+    setTimeout(function() { btn.textContent = orig; }, 1500);
+  });
+}
+
+// ── Scroll spy
+var navLinks = document.querySelectorAll('.nav-link[href^="#"]');
+var sections = Array.from(navLinks).map(function(l) {
+  return document.querySelector(l.getAttribute('href'));
+}).filter(Boolean);
+
+function onScroll() {
+  var y = window.scrollY + 80;
+  var active = sections[0];
+  for (var i = 0; i < sections.length; i++) {
+    if (sections[i].offsetTop <= y) active = sections[i];
+  }
+  navLinks.forEach(function(l) {
+    l.classList.toggle('active', l.getAttribute('href') === '#' + active.id);
+  });
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+onScroll();
+</script>
+</body>
+</html>
