@@ -4,50 +4,53 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bounded Context Designer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,sans-serif;background:#0f1117;color:#e2e8f0;height:100vh;display:flex;flex-direction:column;overflow:hidden}
-header{padding:10px 20px;border-bottom:1px solid #1e2533;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-header h1{font-size:15px;font-weight:700}
+body{font-family:'Inter',system-ui,sans-serif;background:#f8fafc;color:#374151;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+header{padding:10px 20px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff}
+header h1{font-size:15px;font-weight:700;color:#111827}
 .toolbar{display:flex;gap:8px;margin-left:auto;align-items:center;flex-wrap:wrap}
-button{padding:6px 12px;border-radius:6px;border:1px solid #2d3748;background:#141824;color:#e2e8f0;font-size:12px;cursor:pointer;white-space:nowrap}
-button:hover{border-color:#4a7fb5;color:#90cdf4}
-button.primary{background:#1e3a5f;border-color:#4a7fb5;color:#90cdf4}
-button.active{background:#3a1e5f;border-color:#805ad5;color:#d6bcfa}
-button.danger{background:#2a1010;border-color:#c05252;color:#fc8181}
+button{padding:6px 12px;border-radius:6px;border:1px solid #d1d5db;background:#fff;color:#374151;font-size:12px;cursor:pointer;white-space:nowrap;font-family:'Inter',system-ui,sans-serif}
+button:hover{border-color:#2563eb;color:#2563eb}
+button.primary{background:#eff6ff;border-color:#2563eb;color:#2563eb}
+button.active{background:#f5f3ff;border-color:#7c3aed;color:#7c3aed}
+button.danger{background:#fef2f2;border-color:#fca5a5;color:#dc2626}
 main{flex:1;display:flex;overflow:hidden}
-#canvas-wrap{flex:1;position:relative;overflow:hidden;background:#0a0d14;background-image:radial-gradient(#1e2533 1px,transparent 1px);background-size:24px 24px}
+#canvas-wrap{flex:1;position:relative;overflow:hidden;background:#f8fafc;background-image:radial-gradient(#d1d5db 1px,transparent 1px);background-size:24px 24px}
 canvas{position:absolute;top:0;left:0;pointer-events:none}
-.ctx-box{position:absolute;min-width:140px;min-height:80px;border:2px solid #2a4a7f;border-radius:10px;background:#141e2e;padding:10px 12px;cursor:move;user-select:none}
-.ctx-box.connect-hover{border-color:#805ad5;box-shadow:0 0 0 2px #553a7f}
-.ctx-box h3{font-size:12px;font-weight:700;color:#90cdf4;margin-bottom:4px;pointer-events:none}
-.ctx-box .edit-name{display:none;background:transparent;border:none;border-bottom:1px solid #4a7fb5;color:#90cdf4;font-size:12px;font-weight:700;width:100%;outline:none}
+.ctx-box{position:absolute;min-width:140px;min-height:80px;border:2px solid #93c5fd;border-radius:10px;background:#fff;padding:10px 12px;cursor:move;user-select:none;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.ctx-box.connect-hover{border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,.15)}
+.ctx-box h3{font-size:12px;font-weight:700;color:#2563eb;margin-bottom:4px;pointer-events:none}
+.ctx-box .edit-name{display:none;background:transparent;border:none;border-bottom:1px solid #2563eb;color:#2563eb;font-size:12px;font-weight:700;width:100%;outline:none}
 .ctx-box.editing h3{display:none}
 .ctx-box.editing .edit-name{display:block}
-.ctx-box .del-btn{position:absolute;top:4px;right:6px;font-size:11px;color:#4a5568;cursor:pointer;line-height:1;background:none;border:none;padding:0}
-.ctx-box .del-btn:hover{color:#fc8181}
+.ctx-box .del-btn{position:absolute;top:4px;right:6px;font-size:11px;color:#d1d5db;cursor:pointer;line-height:1;background:none;border:none;padding:0}
+.ctx-box .del-btn:hover{color:#dc2626}
 /* Panel */
-#panel{width:320px;border-left:1px solid #1e2533;background:#141824;display:flex;flex-direction:column;transition:transform .2s}
+#panel{width:320px;border-left:1px solid #e5e7eb;background:#fff;display:flex;flex-direction:column;transition:transform .2s}
 #panel.hidden{display:none}
-#panel-hdr{padding:14px 16px;border-bottom:1px solid #1e2533;display:flex;justify-content:space-between;align-items:center}
-#panel-hdr h2{font-size:13px;font-weight:600}
-#panel-close{background:none;border:none;color:#718096;cursor:pointer;font-size:18px}
-#panel-body{padding:14px;overflow-y:auto;flex:1;font-size:12px;line-height:1.6;color:#a0aec0}
-#panel-body h3{font-size:12px;font-weight:600;color:#90cdf4;margin:12px 0 4px}
+#panel-hdr{padding:14px 16px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center}
+#panel-hdr h2{font-size:13px;font-weight:600;color:#111827}
+#panel-close{background:none;border:none;color:#9ca3af;cursor:pointer;font-size:18px}
+#panel-body{padding:14px;overflow-y:auto;flex:1;font-size:12px;line-height:1.6;color:#6b7280}
+#panel-body h3{font-size:12px;font-weight:600;color:#2563eb;margin:12px 0 4px}
 #panel-body p{margin-bottom:8px}
 /* Dropdown */
-#rel-menu{position:fixed;background:#141824;border:1px solid #2d3748;border-radius:8px;padding:6px;display:none;z-index:99;min-width:200px}
-#rel-menu div{font-size:11px;color:#718096;padding:4px 8px;margin-bottom:2px}
-#rel-menu button{display:block;width:100%;text-align:left;padding:7px 10px;font-size:12px;border-radius:5px;margin-bottom:2px}
+#rel-menu{position:fixed;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:6px;display:none;z-index:99;min-width:200px;box-shadow:0 4px 16px rgba(0,0,0,.1)}
+#rel-menu div{font-size:11px;color:#9ca3af;padding:4px 8px;margin-bottom:2px}
+#rel-menu button{display:block;width:100%;text-align:left;padding:7px 10px;font-size:12px;border-radius:5px;margin-bottom:2px;border:none;background:none;color:#374151}
+#rel-menu button:hover{background:#f3f4f6;color:#111827}
 /* Legend */
 .legend{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.li{display:flex;align-items:center;gap:4px;font-size:10px;color:#718096}
+.li{display:flex;align-items:center;gap:4px;font-size:10px;color:#9ca3af}
 .lline{width:20px;height:2px}
 </style>
 </head>
 <body>
 <header>
-  <a href="index.html" style="font-size:12px;color:#4a5568;text-decoration:none;white-space:nowrap;flex-shrink:0" onmouseover="this.style.color='#90cdf4'" onmouseout="this.style.color='#4a5568'">← Index</a>
+  <a href="index.html" style="font-size:12px;color:#6b7280;text-decoration:none;white-space:nowrap;flex-shrink:0" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#6b7280'">← Index</a>
   <h1>Bounded Context Designer</h1>
   <div class="legend">
     <div class="li"><div class="lline" style="background:#68d391"></div>Shared Kernel</div>

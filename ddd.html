@@ -3,43 +3,45 @@
 <head>
 <meta charset="UTF-8">
 <title>DDD: Aggregates & Bounded Contexts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,sans-serif;background:#0f1117;color:#e2e8f0;height:100vh;display:flex;flex-direction:column}
-header{padding:12px 20px;border-bottom:1px solid #2d3748;display:flex;align-items:center;gap:12px}
-header h1{font-size:16px;font-weight:600;color:#90cdf4}
-header p{font-size:12px;color:#718096}
+body{font-family:'Inter',system-ui,sans-serif;background:#f8fafc;color:#374151;height:100vh;display:flex;flex-direction:column}
+header{padding:12px 20px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:12px;background:#fff}
+header h1{font-size:16px;font-weight:600;color:#2563eb}
+header p{font-size:12px;color:#9ca3af}
 .legend{display:flex;gap:12px;margin-left:auto;flex-wrap:wrap}
-.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#a0aec0}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#6b7280}
 .legend-dot{width:10px;height:10px;border-radius:2px}
 main{display:flex;flex:1;overflow:hidden}
-#canvas-wrap{flex:1;overflow:auto;padding:20px;position:relative}
+#canvas-wrap{flex:1;overflow:auto;padding:20px;position:relative;background:#f8fafc}
 svg{min-width:900px}
-#panel{width:380px;border-left:1px solid #2d3748;display:flex;flex-direction:column;background:#141824;transition:transform .2s}
+#panel{width:380px;border-left:1px solid #e5e7eb;display:flex;flex-direction:column;background:#fff;transition:transform .2s}
 #panel.hidden{display:none}
-#panel-header{padding:14px 16px;border-bottom:1px solid #2d3748;display:flex;justify-content:space-between;align-items:center}
-#panel-header h2{font-size:14px;font-weight:600}
-#panel-close{background:none;border:none;color:#718096;cursor:pointer;font-size:18px;line-height:1}
-#panel-close:hover{color:#e2e8f0}
+#panel-header{padding:14px 16px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center}
+#panel-header h2{font-size:14px;font-weight:600;color:#111827}
+#panel-close{background:none;border:none;color:#9ca3af;cursor:pointer;font-size:18px;line-height:1}
+#panel-close:hover{color:#374151}
 #panel-body{padding:16px;overflow-y:auto;flex:1;font-size:13px;line-height:1.6}
 .tag{display:inline-block;padding:2px 8px;border-radius:9px;font-size:10px;font-weight:600;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
-#panel-body h3{font-size:13px;font-weight:600;color:#90cdf4;margin:14px 0 5px}
-#panel-body p{color:#a0aec0;margin-bottom:8px}
-#panel-body ul{color:#a0aec0;padding-left:16px;margin-bottom:8px}
+#panel-body h3{font-size:13px;font-weight:600;color:#2563eb;margin:14px 0 5px}
+#panel-body p{color:#6b7280;margin-bottom:8px}
+#panel-body ul{color:#6b7280;padding-left:16px;margin-bottom:8px}
 #panel-body ul li{margin-bottom:3px}
-pre{background:#0a0d14;border:1px solid #2d3748;border-radius:6px;padding:12px;overflow-x:auto;font-size:11px;line-height:1.5;color:#a8d8a8;margin-top:6px}
+pre{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;padding:12px;overflow-x:auto;font-size:11px;line-height:1.5;color:#166534;margin-top:6px;font-family:'JetBrains Mono','Fira Code',monospace}
 .ctx-box{rx:10;ry:10}
 .node{cursor:pointer;transition:filter .15s}
-.node:hover rect,.node:hover ellipse{filter:brightness(1.3)}
+.node:hover rect,.node:hover ellipse{filter:brightness(.92)}
 .node rect,.node ellipse{transition:all .15s}
 .node.selected rect,.node.selected ellipse{stroke-width:2.5!important}
-.cross-badge{font-size:9px;fill:#fbd38d}
-.edge-label{font-size:9px;fill:#718096}
+.cross-badge{font-size:9px;fill:#d97706}
+.edge-label{font-size:9px;fill:#9ca3af}
 </style>
 </head>
 <body>
 <header>
-  <a href="index.html" style="font-size:12px;color:#4a5568;text-decoration:none;white-space:nowrap;flex-shrink:0" onmouseover="this.style.color='#90cdf4'" onmouseout="this.style.color='#4a5568'">← Index</a>
+  <a href="index.html" style="font-size:12px;color:#6b7280;text-decoration:none;white-space:nowrap;flex-shrink:0" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#6b7280'">← Index</a>
   <div>
     <h1>DDD — Aggregates &amp; Bounded Contexts</h1>
     <p>Payments domain decomposition · Click any node to explore</p>
